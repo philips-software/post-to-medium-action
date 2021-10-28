@@ -21,7 +21,7 @@ jobs:
         with:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
-          tags: latest 0.1
+          tags: latest v0.1
           push-branches: main
         env:
           DOCKER_USERNAME: ${{ github.actor }}
