@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create Medium Post
-        uses: philips-software/post-to-medium-action@main
+        uses: philips-software/post-to-medium-action@v0.1
         env:
           GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
