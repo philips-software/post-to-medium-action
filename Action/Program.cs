@@ -2,6 +2,7 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using CommandLine;
 using DotNetEnv;
 using PostMediumGitHubAction.Services;
 
@@ -16,7 +17,7 @@ namespace PostMediumGitHubAction
         {
             // Load .env file if present
             Env.TraversePath().Load();
-            new ConfigureService();
+            new ConfigureService(args);
             MediumService mediumService = new MediumService();
             await mediumService.SubmitNewContentAsync();
         }

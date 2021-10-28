@@ -3,47 +3,47 @@ description: "Automatically push HTML or Markdown to Medium"
 author: "Brend-Smits"
 
 inputs:
-  IntegrationToken:
+  integration_token:
     description: "Medium's Integration Token. Token can be retrieved at medium.com, settings section, under 'Integration Token.'"
     required: true
-  Content:
+  content:
     description: "Content to add in the post, can be either HTML or Markdown. Use either this parameter, or the file parameter."
     required: false
-  ContentFormat:
+  content_format:
     description: "The format of the content field. There are two valid values, html, and markdown."
     required: true
-  File:
+  file:
     description: "Absolute path to the file to use as content, can be either HTML or Markdown. Use either this parameter, or the content parameter."
     required: false
-  PublishStatus:
+  publish_status:
     description: "Post's status. Valid values are 'draft', 'public', or 'unlisted'."
     required: false
     default: "draft"
-  NotifyFollowers:
+  notify_followers:
     description: "Whether to notify followers that the user has published."
     required: false
     default: "false"
-  License:
+  license:
     description: "Post's license. Valid values are 'all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 'public-domain'."
     required: false
     default: "all-rights-reserved"
-  PublicationName:
+  publication_name:
     description: "The name of the publication the post is being created under. Either PublicationName of PublicationId should be set."
     required: false
     default: ""
-  PublicationId:
+  publication_id:
     description: "The id of the publication the post is being created under. If you do not know the Id, use PublicationName."
     required: false
     default: ""
-  CanonicalUrl:
+  canonical_url:
     description: "The canonical URL of the post. If canonicalUrl was not specified in the creation of the post, this field will not be present."
     required: false
     default: ""
-  Tags:
+  tags:
     description: "The post’s tags. Provide a comma separated string without spaces."
     required: true
     default: ""
-  Title:
+  title:
     description: "The post's title."
     required: true
     default: ""
@@ -51,17 +51,17 @@ inputs:
 outputs:
   id:
     description: "ID of the Medium post."
-  authorId:
+  author_id:
     description: "Author ID of the post creator."
-  canonicalUrl:
+  canonical_url:
     description: "Canonical URL of the post."
   license:
     description: "License of the post, can be empty at times."
-  licenseUrl:
+  license_url:
     description: "License url of the post, Medium uses this under the hood."
-  publicationId:
+  publication_id:
     description: "Id of the publication which the post is created under."
-  publicationStatus:
+  publication_status:
     description: "Publication status of the post."
   title:
     description: "Title of the post."
@@ -73,6 +73,29 @@ outputs:
 runs:
   using: 'docker'
   image: 'docker://ghcr.io/philips-software/post-to-medium-action:latest'
+  args:
+    - '-integration-token'
+    - ${{ inputs.integration_token }}
+    - '-tags'
+    - ${{ inputs.tags }}
+    - '-canonical-url'
+    - ${{ inputs.canonical_url }}
+    - '-publish-status'
+    - ${{ inputs.publish_status }}
+    - '-license'
+    - ${{ inputs.license }}
+    - '-publication-id'
+    - ${{ inputs.publication_id }}
+    - '-publication-name'
+    - ${{ inputs.publication_name }}
+    - '-notify-followers'
+    - ${{ inputs.notify_followers }}
+    - '-content-format'
+    - ${{ inputs.content_format }}
+    - '-content'
+    - ${{ inputs.content }}
+    - '-file'
+    - ${{ inputs.file }}
 
 
 branding:

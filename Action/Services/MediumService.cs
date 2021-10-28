@@ -79,7 +79,7 @@ namespace PostMediumGitHubAction.Services
                 Content = Program.Settings.Content,
                 ContentFormat = Program.Settings.ContentFormat,
                 PublishStatus = Program.Settings.PublishStatus,
-                Tags = Program.Settings.Tags,
+                Tags = (string[])Program.Settings.Tags,
                 Title = Program.Settings.Title
             };
             HttpResponseMessage response = await Program.Client.PostAsync($"publications/{publicationId}/posts",

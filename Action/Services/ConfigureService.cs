@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using CommandLine;
 
 namespace PostMediumGitHubAction.Services
 {
     internal class ConfigureService
     {
-        public ConfigureService()
+        public ConfigureService(string[] args)
         {
-            ConfigureApplication();
+            ConfigureApplication(args);
         }
         /// <summary>
         /// Configure the application with correct settings.
         /// </summary>
-        private void ConfigureApplication()
+        private void ConfigureApplication(string[] args)
         {
             Program.Settings.File = Environment.GetEnvironmentVariable(nameof(Program.Settings.File));
             Program.Settings.Content = Environment.GetEnvironmentVariable(nameof(Program.Settings.Content));
@@ -29,6 +30,13 @@ namespace PostMediumGitHubAction.Services
             Program.Settings.PublishStatus = Environment.GetEnvironmentVariable(nameof(Program.Settings.PublishStatus))?.ToLower();
             Program.Settings.Tags = Environment.GetEnvironmentVariable(nameof(Program.Settings.Tags))?.Split(',');
             Program.Settings.Title = Environment.GetEnvironmentVariable(nameof(Program.Settings.Title));
+
+            // Command Line arguments will overwrite environment file.
+            if (args.Length > 0)
+            {
+                Parser.Default.ParseArguments<Settings>(args);
+            }
+
             Program.Client = new HttpClient
             {
                 BaseAddress = new Uri("https://api.medium.com/v1/")
