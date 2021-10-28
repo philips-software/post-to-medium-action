@@ -8,6 +8,12 @@ jobs:
     name: Use internal GH Action
     runs-on: ubuntu-latest
     steps:
+      - name: Set up environment
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.x'
+      - run: source ~/.bashrc
+      - run: dotnet --version
       - name: Create Medium Post
         uses: philips-software/post-to-medium-action@v0.1
         env:

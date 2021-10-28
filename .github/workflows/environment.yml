@@ -22,7 +22,7 @@ jobs:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
           tags: latest v0.1
-          push-branches: main
+          push-branches: main bugfix/change-version-action
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
