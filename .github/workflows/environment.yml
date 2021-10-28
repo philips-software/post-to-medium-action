@@ -1,0 +1,30 @@
+name: Create environment 
+
+on:
+  push:
+    paths:
+      - Action/Dockerfile
+      - Action/*
+      - .github/workflows/environment.yml
+  workflow_dispatch:
+
+jobs:
+  docker-build:
+    runs-on: ubuntu-20.04
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Build Docker Images
+        uses: philips-software/docker-ci-scripts@v3.3.2
+        with:
+          dockerfile: ./Action/Dockerfile
+          image-name: post-to-medium-action
+          tags: latest 0.1
+          push-branches: main
+        env:
+          DOCKER_USERNAME: ${{ github.actor }}
+          DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          DOCKER_REGISTRY: ghcr.io/philips-software
+          GITHUB_ORGANIZATION: philips-software

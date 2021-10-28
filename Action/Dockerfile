@@ -5,7 +5,8 @@ WORKDIR /app
 
 FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
 WORKDIR /src
-COPY ["PostMediumGitHubAction.csproj", "."]
+
+COPY ["Action/PostMediumGitHubAction.csproj", "."]
 RUN dotnet restore "./PostMediumGitHubAction.csproj"
 COPY . .
 WORKDIR "/src/."
