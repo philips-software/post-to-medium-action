@@ -1,0 +1,20 @@
+name: Use the action locally to test GH Action functionality
+
+on:
+  workflow_dispatch:
+
+jobs:
+  execute-action:
+    name: Use internal GH Action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Medium Post
+        uses: philips-software/post-to-medium-action@main
+        with:
+           IntegrationToken: "${{ secrets.INTEGRATION_TOKEN }}"
+           Content: "Test content to see if publishing works from GH Action"
+           ContentFormat: "markdown"
+           NotifyFollowers: "false"
+           PublicationName: "test-brend-publication"
+           Tags: "test,tag"
+           Title: "Test post via GH Actions to Medium"
