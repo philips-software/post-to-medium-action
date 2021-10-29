@@ -9,14 +9,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create Medium Post
-        uses: philips-software/post-to-medium-action@main
-        env:
-          GITHUB_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        uses: philips-software/post-to-medium-action@v0.1
         with:
-           IntegrationToken: "${{ secrets.INTEGRATION_TOKEN }}"
-           Content: "Test content to see if publishing works from GH Action"
-           ContentFormat: "markdown"
-           NotifyFollowers: "false"
-           PublicationName: "test-brend-publication"
-           Tags: "test,tag"
-           Title: "Test post via GH Actions to Medium"
+           integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
+           content: "Test content to see if publishing works from GH Action"
+           content_format: "markdown"
+           notify_followers: "false"
+           publication_name: "test-brend-publication"
+           tags: "test,tag"
+           title: "Test post via GH Actions to Medium"

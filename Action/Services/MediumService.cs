@@ -48,7 +48,7 @@ namespace PostMediumGitHubAction.Services
         /// <param name="publicationId">Optional Id of the publication</param>
         /// <returns>Medium Publication</returns>
         public async Task<Publication> FindMatchingPublicationAsync(string mediumUserId, string publicationToLookFor,
-            int? publicationId)
+            string publicationId)
         {
             HttpResponseMessage response =
                 await Program.Client.GetAsync($"users/{mediumUserId}/publications").ConfigureAwait(false);
@@ -61,7 +61,7 @@ namespace PostMediumGitHubAction.Services
             foreach (Publication pub in publications)
             {
                 if (!string.IsNullOrEmpty(publicationToLookFor) && pub.Name == publicationToLookFor) return pub;
-                if (publicationId != null && Convert.ToInt32(pub.Id) == publicationId) return pub;
+                if (publicationId != null && pub.Id == publicationId) return pub;
             }
 
             return null;
@@ -79,7 +79,7 @@ namespace PostMediumGitHubAction.Services
                 Content = Program.Settings.Content,
                 ContentFormat = Program.Settings.ContentFormat,
                 PublishStatus = Program.Settings.PublishStatus,
-                Tags = Program.Settings.Tags,
+                Tags = (string[])Program.Settings.Tags,
                 Title = Program.Settings.Title
             };
             HttpResponseMessage response = await Program.Client.PostAsync($"publications/{publicationId}/posts",

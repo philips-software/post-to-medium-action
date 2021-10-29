@@ -1,21 +1,16 @@
-#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+# Set the base image as the .NET 3.1 SDK (this includes the runtime)
+FROM mcr.microsoft.com/dotnet/sdk:3.1 as build-env
 
-FROM mcr.microsoft.com/dotnet/runtime:3.1 AS base
-WORKDIR /app
+# Copy everything and publish the release (publish implicitly restores and builds)
+COPY . ./
+RUN dotnet publish ./Action/PostMediumGitHubAction.csproj -c Release -o out --no-self-contained
 
-FROM mcr.microsoft.com/dotnet/sdk:3.1 AS build
-WORKDIR /src
+# Label the container
+LABEL maintainer="Brend Smits <brend.smits@philips.com>"
+LABEL repository="https://github.com/philips-software/post-to-medium-action"
+LABEL homepage="https://github.com/philips-software/post-to-medium-action"
 
-COPY ["Action/PostMediumGitHubAction.csproj", "."]
-RUN dotnet restore "./PostMediumGitHubAction.csproj"
-COPY . .
-WORKDIR "/src/."
-RUN dotnet build "PostMediumGitHubAction.csproj" -c Release -o /app/build
-
-FROM build AS publish
-RUN dotnet publish "PostMediumGitHubAction.csproj" -c Release -o /app/publish
-
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "PostMediumGitHubAction.dll"]
+# Relayer the .NET SDK, anew with the build output
+FROM mcr.microsoft.com/dotnet/sdk:3.1
+COPY --from=build-env /out .
+ENTRYPOINT [ "dotnet", "/PostMediumGitHubAction.dll" ]

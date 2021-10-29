@@ -9,6 +9,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="CommandLineParser" Version="2.8.0" />
 	  <PackageReference Include="DotNetEnv" Version="2.2.0" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
 	</ItemGroup>
