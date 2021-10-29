@@ -2,6 +2,8 @@ name: Create environment
 
 on:
   push:
+    branches:
+      - main
     paths:
       - Action/Dockerfile
       - Action/*
@@ -21,7 +23,7 @@ jobs:
         with:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
-          tags: latest v0.1
+          tags: latest v0.2
           push-branches: main
         env:
           DOCKER_USERNAME: ${{ github.actor }}
