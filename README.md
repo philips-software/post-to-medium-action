@@ -35,20 +35,23 @@ The easiest way to use this action is to add the following into your workflow fi
 1. Add the following part in your workflow file:
 
    ```yaml
-   execute-action:
-    name: Use internal GH Action
-    runs-on: ubuntu-latest
-    steps:
-      - name: Create Medium Post
-        uses: philips-software/post-to-medium-action@latest
-        with:
-           IntegrationToken: "${{ secrets.INTEGRATION_TOKEN }}"
-           Content: "Content here"
-           ContentFormat: "markdown"
-           NotifyFollowers: "false"
-           PublicationName: "publication"
-           Tags: "test,tag"
-           Title: "Test post via GH Actions to Medium"
+   jobs:
+     post-to-medium:
+       name: Post to Medium
+       runs-on: ubuntu-latest
+       steps:
+         - name: Create Medium Post
+           uses: philips-software/post-to-medium-action@v0.2
+           with:
+             integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
+             content: "content here"
+             content_format: "markdown"
+             notify_followers: "false"
+             publication_name: "publication"
+             tags: "test,tag"
+             title: "title"
+             license: "all-rights-reserved"
+             publish_status: "draft"
    ```
 ## Inputs
 
