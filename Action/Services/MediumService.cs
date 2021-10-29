@@ -26,7 +26,7 @@ namespace PostMediumGitHubAction.Services
         }
 
         /// <summary>
-        /// Retrieves current authenticated user
+        ///     Retrieves current authenticated user
         /// </summary>
         /// <returns>Medium User</returns>
         public async Task<User> GetCurrentMediumUserAsync()
@@ -97,9 +97,10 @@ namespace PostMediumGitHubAction.Services
                         .RootElement.EnumerateObject().First().Value.ToString());
                 throw new Exception("Something went wrong when posting: " + errors[0].Message);
             }
+
             MediumCreatedPost createdPostData = JsonSerializer.Deserialize<MediumCreatedPost>(
                 JsonDocument.Parse(
-                    await response.Content.ReadAsByteArrayAsync())
+                        await response.Content.ReadAsByteArrayAsync())
                     .RootElement.EnumerateObject().First().Value.ToString());
             return createdPostData;
         }
@@ -118,7 +119,8 @@ namespace PostMediumGitHubAction.Services
 
         /// <summary>
         ///     Sets the output variables in the GitHub workflow
-        /// See: https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-output-parameter
+        ///     See:
+        ///     https://docs.github.com/en/actions/learn-github-actions/workflow-commands-for-github-actions#setting-an-output-parameter
         /// </summary>
         /// <param name="post">Newly created post that is used to set output variables</param>
         /// <returns></returns>

@@ -26,7 +26,7 @@
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## State
-> Work in progress, might not be functional yet
+> Functional, but work in progress. Use at your own risk.
 
 ## Usage
 
@@ -50,24 +50,22 @@ The easiest way to use this action is to add the following into your workflow fi
            Tags: "test,tag"
            Title: "Test post via GH Actions to Medium"
    ```
-
-
 ## Inputs
 
 | parameter | description | required | default |
 | - | - | - | - |
-| IntegrationToken | Medium's Integration Token. Token can be retrieved at medium.com, settings section, under 'Integration Token.' | `true` |  |
-| Content | Content to add in the post, can be either HTML or Markdown. Use either this parameter, or the file parameter. | `false` |  |
-| ContentFormat | The format of the content field. There are two valid values, html, and markdown. | `true` |  |
-| File | Absolute path to the file to use as content, can be either HTML or Markdown. Use either this parameter, or the content parameter. | `false` |  |
-| PublishStatus | Post's status. Valid values are 'draft', 'public', or 'unlisted'. | `false` | draft |
-| NotifyFollowers | Whether to notify followers that the user has published. | `false` | false |
-| License | Post's license. Valid values are 'all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 'public-domain'. | `false` | all-rights-reserved |
-| PublicationName | The name of the publication the post is being created under. Either PublicationName of PublicationId should be set. | `false` |  |
-| PublicationId | The id of the publication the post is being created under. If you do not know the Id, use PublicationName. | `false` |  |
-| CanonicalUrl | The canonical URL of the post. If canonicalUrl was not specified in the creation of the post, this field will not be present. | `false` |  |
-| Tags | The post’s tags. Provide a comma separated string without spaces. | `true` |  |
-| Title | The post's title. | `true` |  |
+| integration_token | Medium's Integration Token. Token can be retrieved at medium.com, settings section, under 'Integration Token.' | `true` |  |
+| content | Content to add in the post, can be either HTML or Markdown. Use either this parameter, or the file parameter. | `false` |  |
+| content_format | The format of the content field. There are two valid values, html, and markdown. | `true` |  |
+| file | Absolute path to the file to use as content, can be either HTML or Markdown. Use either this parameter, or the content parameter. | `false` |  |
+| publish_status | Post's status. Valid values are 'draft', 'public', or 'unlisted'. | `false` | draft |
+| notify_followers | Whether to notify followers that the user has published. | `false` | false |
+| license | Post's license. Valid values are 'all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 'public-domain'. | `false` | all-rights-reserved |
+| publication_name | The name of the publication the post is being created under. Either PublicationName of PublicationId should be set. | `false` |  |
+| publication_id | The id of the publication the post is being created under. If you do not know the Id, use PublicationName. | `false` |  |
+| canonical_url | The canonical URL of the post. If canonicalUrl was not specified in the creation of the post, this field will not be present. | `false` |  |
+| tags | The post’s tags. Provide a comma separated string without spaces. | `true` |  |
+| title | The post's title. | `true` |  |
 
 
 ## Outputs
@@ -75,12 +73,12 @@ The easiest way to use this action is to add the following into your workflow fi
 | parameter | description |
 | - | - |
 | id | ID of the Medium post. |
-| authorId | Author ID of the post creator. |
-| canonicalUrl | Canonical URL of the post. |
+| author_id | Author ID of the post creator. |
+| canonical_url | Canonical URL of the post. |
 | license | License of the post, can be empty at times. |
-| licenseUrl | License url of the post, Medium uses this under the hood. |
-| publicationId | Id of the publication which the post is created under. |
-| publicationStatus | Publication status of the post. |
+| license_url | License url of the post, Medium uses this under the hood. |
+| publication_id | Id of the publication which the post is created under. |
+| publication_status | Publication status of the post. |
 | title | Title of the post. |
 | tags | Tags of the post, comma separated. |
 | url | URL to the Medium post. |
