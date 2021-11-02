@@ -26,7 +26,7 @@
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## State
-> Functional, but work in progress. Use at your own risk.
+> Functional
 
 ## Usage
 
@@ -34,14 +34,14 @@ The easiest way to use this action is to add the following into your workflow fi
 
 1. Add the following part in your workflow file:
 
-   ```yaml
+   ```
    jobs:
      post-to-medium:
        name: Post to Medium
        runs-on: ubuntu-latest
        steps:
          - name: Create Medium Post
-           uses: philips-software/post-to-medium-action@v0.2
+           uses: philips-software/post-to-medium-action@v0.3
            with:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
              content: "content here"
@@ -69,6 +69,7 @@ The easiest way to use this action is to add the following into your workflow fi
 | canonical_url | The canonical URL of the post. If canonicalUrl was not specified in the creation of the post, this field will not be present. | `false` |  |
 | tags | The post’s tags. Provide a comma separated string without spaces. | `true` |  |
 | title | The post's title. | `true` |  |
+| parse_frontmatter | Should the action read and delete frontmatter in a markdown file. Frontmatter should start with --- and end with ---. Should be on the top of the page. When parsing frontmatter, only markdown is supported and settings will be overwritten if specified in the frontmatter. | `true` | false |
 
 
 ## Outputs

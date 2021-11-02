@@ -47,6 +47,10 @@ inputs:
     description: "The post's title."
     required: true
     default: ""
+  parse_frontmatter:
+    description: "Should the action read and delete frontmatter in a markdown file. Frontmatter should start with --- and end with ---. Should be on the top of the page. When parsing frontmatter, only markdown is supported and settings will be overwritten if specified in the frontmatter."
+    required: false
+    default: "false"
 
 outputs:
   id:
@@ -98,6 +102,8 @@ runs:
     - ${{ inputs.content }}
     - '--file'
     - ${{ inputs.file }}
+    - '--parse-frontmatter'
+    - ${{ inputs.parse_frontmatter }}
 
 
 branding:

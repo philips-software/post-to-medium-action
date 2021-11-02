@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using CommandLine;
@@ -7,6 +8,9 @@ namespace PostMediumGitHubAction.Services
 {
     internal class ConfigureService
     {
+        public ConfigureService()
+        {
+        }
         public ConfigureService(string[] args)
         {
             ConfigureApplication(args);
@@ -31,6 +35,7 @@ namespace PostMediumGitHubAction.Services
             Program.Settings.PublicationName =
                 Environment.GetEnvironmentVariable(nameof(Program.Settings.PublicationName));
             Program.Settings.PublishStatus = Environment.GetEnvironmentVariable(nameof(Program.Settings.PublishStatus));
+            Program.Settings.ParseFrontmatter = Convert.ToBoolean(Environment.GetEnvironmentVariable(nameof(Program.Settings.ParseFrontmatter)));
             Program.Settings.Tags = Environment.GetEnvironmentVariable(nameof(Program.Settings.Tags))?.Split(',');
             Program.Settings.Title = Environment.GetEnvironmentVariable(nameof(Program.Settings.Title));
 
@@ -53,6 +58,42 @@ namespace PostMediumGitHubAction.Services
             Program.Settings.ContentFormat = Program.Settings.ContentFormat?.ToLower();
         }
 
+        /// <summary>
+        /// Override Program Settings with values from parameter if they are not null.
+        /// </summary>
+        /// <param name="settingsToReplace">Settings to replace Program settings with</param>
+        public void OverrideSettings(Settings settingsToReplace)
+        {
+            if (settingsToReplace.CanonicalUrl != null)
+            {
+                Program.Settings.CanonicalUrl = settingsToReplace.CanonicalUrl;
+            }
+
+            if (settingsToReplace.ContentFormat != null)
+            {
+                Program.Settings.ContentFormat = settingsToReplace.ContentFormat;
+            }
+
+            if (settingsToReplace.Tags.Any())
+            {
+                Program.Settings.Tags = settingsToReplace.Tags;
+            }
+
+            if (settingsToReplace.License != null)
+            {
+                Program.Settings.License = settingsToReplace.License;
+            }
+
+            if (settingsToReplace.PublishStatus != null)
+            {
+                Program.Settings.PublishStatus = settingsToReplace.PublishStatus;
+            }
+
+            if (settingsToReplace.Title != null)
+            {
+                Program.Settings.Title = settingsToReplace.Title;
+            }
+        }
         /// <summary>
         ///     Checks if settings are filled in correctly.
         /// </summary>

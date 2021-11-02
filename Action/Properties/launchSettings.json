@@ -1,6 +1,6 @@
 {
   "profiles": {
-    "PostMediumGitHubAction2": {
+    "PostMediumGitHubAction": {
       "commandName": "Project"
     },
     "Docker": {

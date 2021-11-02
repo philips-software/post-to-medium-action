@@ -5,12 +5,19 @@ using System.Net.Http;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
+using Markdig;
+using Markdig.Extensions.Yaml;
+using Markdig.Renderers;
+using Markdig.Syntax;
 using PostMediumGitHubAction.Domain;
+using YamlDotNet.Serialization;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace PostMediumGitHubAction.Services
 {
     public class MediumService
     {
+        private ConfigureService _configureService = new ConfigureService();
         public async Task SubmitNewContentAsync()
         {
             User user = await GetCurrentMediumUserAsync();
@@ -20,9 +27,54 @@ namespace PostMediumGitHubAction.Services
 
             if (!string.IsNullOrEmpty(Program.Settings.File))
                 Program.Settings.Content = await ReadFileFromPath(Program.Settings.File);
+            if (Program.Settings.ContentFormat == "markdown" && Program.Settings.ParseFrontmatter)
+            {
+                await ParseFrontmatter(Program.Settings.Content);
+            }
 
             MediumCreatedPost post = await CreateNewPostUnderPublicationAsync(pub.Id);
             SetWorkflowOutputs(post);
+        }
+
+        /// <summary>
+        /// Parse markdown content and look for frontmatter.
+        /// Convert the markdown into HTML to remove the frontmatter.
+        /// </summary>
+        /// <param name="content">Content in markdown</param>
+        /// <returns></returns>
+        private async Task ParseFrontmatter(string content)
+        {
+            MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
+                .UseYamlFrontMatter()
+                .Build();
+
+            StringWriter writer = new StringWriter();
+            HtmlRenderer renderer = new HtmlRenderer(writer);
+            pipeline.Setup(renderer);
+
+            MarkdownDocument document = Markdown.Parse(content, pipeline);
+
+            // extract the front matter from markdown document
+            YamlFrontMatterBlock yamlBlock = document.Descendants<YamlFrontMatterBlock>().FirstOrDefault();
+
+            if (yamlBlock != null)
+            {
+                string yaml = yamlBlock.Lines.ToString();
+
+                // deserialize the yaml block into a custom type
+                IDeserializer deserializer = new DeserializerBuilder()
+                    .WithNamingConvention(PascalCaseNamingConvention.Instance)
+                    .Build();
+
+                Settings metadata = deserializer.Deserialize<Settings>(yaml);
+                _configureService.OverrideSettings(metadata);
+                // finally we can render the markdown content as html if necessary
+                renderer.Render(document);
+                await writer.FlushAsync();
+                string html = writer.ToString();
+                Program.Settings.Content = html;
+                Program.Settings.ContentFormat = "html";
+            }
         }
 
         /// <summary>
@@ -79,7 +131,7 @@ namespace PostMediumGitHubAction.Services
                 Content = Program.Settings.Content,
                 ContentFormat = Program.Settings.ContentFormat,
                 PublishStatus = Program.Settings.PublishStatus,
-                Tags = (string[])Program.Settings.Tags,
+                Tags = Program.Settings.Tags as string[],
                 Title = Program.Settings.Title
             };
             HttpResponseMessage response = await Program.Client.PostAsync($"publications/{publicationId}/posts",

@@ -58,5 +58,9 @@ namespace PostMediumGitHubAction
             HelpText =
                 "The token that should be used to authenticate in the API. Token can be retrieved at https://medium.com/me/settings under \"Integration Token\"")]
         public string IntegrationToken { get; set; }
+
+        [Option('m', "parse-frontmatter", Required = false,
+            HelpText = "Should the action read and delete frontmatter in a markdown file. Frontmatter should start with --- and end with ---. Should be on the top of the page. When parsing frontmatter, only markdown is supported and settings will be overwritten if specified in the frontmatter.")]
+        public bool ParseFrontmatter { get; set; } = false;
     }
 }
