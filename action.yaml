@@ -76,7 +76,7 @@ outputs:
 
 runs:
   using: 'docker'
-  image: 'docker://ghcr.io/philips-software/post-to-medium-action:latest'
+  image: 'docker://ghcr.io/philips-software/post-to-medium-action:v0.3.1'
   args:
     - '--integration-token'
     - ${{ inputs.integration_token }}
