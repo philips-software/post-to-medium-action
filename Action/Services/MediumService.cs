@@ -32,6 +32,13 @@ namespace PostMediumGitHubAction.Services
                 await ParseFrontmatter(Program.Settings.Content);
             }
 
+            _configureService.CheckForValidSettings();
+
+            // Ensure lower case, API is case sensitive sadly
+            Program.Settings.License = Program.Settings.License?.ToLower();
+            Program.Settings.PublishStatus = Program.Settings.PublishStatus?.ToLower();
+            Program.Settings.ContentFormat = Program.Settings.ContentFormat?.ToLower();
+
             MediumCreatedPost post = await CreateNewPostUnderPublicationAsync(pub.Id);
             SetWorkflowOutputs(post);
         }
@@ -132,7 +139,9 @@ namespace PostMediumGitHubAction.Services
                 ContentFormat = Program.Settings.ContentFormat,
                 PublishStatus = Program.Settings.PublishStatus,
                 Tags = Program.Settings.Tags as string[],
-                Title = Program.Settings.Title
+                Title = Program.Settings.Title,
+                CanonicalUrl = Program.Settings.CanonicalUrl,
+                License = Program.Settings.License
             };
             HttpResponseMessage response = await Program.Client.PostAsync($"publications/{publicationId}/posts",
                     new StringContent(JsonSerializer.Serialize(post), Encoding.UTF8, "application/json"))

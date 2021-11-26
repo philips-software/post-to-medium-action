@@ -13,5 +13,7 @@ namespace PostMediumGitHubAction.Domain
         [JsonPropertyName("content")] public string Content { get; set; }
 
         [JsonPropertyName("contentFormat")] public string ContentFormat { get; set; }
+        [JsonPropertyName("canonicalUrl")] public string CanonicalUrl { get; set; }
+        [JsonPropertyName("license")] public string License { get; set; }
     }
 }

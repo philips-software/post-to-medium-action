@@ -18,6 +18,8 @@ namespace PostMediumGitHubAction.Services
 
         /// <summary>
         ///     Configure the application with correct settings.
+        /// First Set environment variables
+        /// Command line arguments will then override environment variables
         /// </summary>
         private void ConfigureApplication(string[] args)
         {
@@ -49,13 +51,6 @@ namespace PostMediumGitHubAction.Services
             };
             Program.Client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             Program.Client.DefaultRequestHeaders.Add("Authorization", $"Bearer {Program.Settings.IntegrationToken}");
-
-            CheckForValidSettings();
-
-            // Ensure lower case, API is case sensitive sadly
-            Program.Settings.License = Program.Settings.License?.ToLower();
-            Program.Settings.PublishStatus = Program.Settings.PublishStatus?.ToLower();
-            Program.Settings.ContentFormat = Program.Settings.ContentFormat?.ToLower();
         }
 
         /// <summary>
@@ -97,7 +92,7 @@ namespace PostMediumGitHubAction.Services
         /// <summary>
         ///     Checks if settings are filled in correctly.
         /// </summary>
-        private void CheckForValidSettings()
+        public void CheckForValidSettings()
         {
             if (string.IsNullOrEmpty(Program.Settings.IntegrationToken))
                 throw new ArgumentNullException(nameof(Program.Settings.IntegrationToken),
