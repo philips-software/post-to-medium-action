@@ -2,12 +2,8 @@ name: Create environment
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - Action/Dockerfile
-      - Action/*
-      - .github/workflows/environment.yml
+    tags:
+      - v*
   workflow_dispatch:
 
 jobs:
