@@ -138,7 +138,7 @@ namespace PostMediumGitHubAction.Services
                 Content = Program.Settings.Content,
                 ContentFormat = Program.Settings.ContentFormat,
                 PublishStatus = Program.Settings.PublishStatus,
-                Tags = Program.Settings.Tags as string[],
+                Tags = Program.Settings.Tags.ToArray(),
                 Title = Program.Settings.Title,
                 CanonicalUrl = Program.Settings.CanonicalUrl,
                 License = Program.Settings.License
