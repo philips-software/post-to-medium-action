@@ -8,4 +8,4 @@ gh-release: ## Creates a new release by creating a new tag and pushing it - Exam
 	@git tag -sam "$(DESCRIPTION)" $(NEW_VERSION)
 	@git push origin $(NEW_VERSION)
 	@git stash pop
-	@gh release create $(NEW_VERSION) --draft
+	@gh release create $(NEW_VERSION) --draft --title "$(DESCRIPTION)"
