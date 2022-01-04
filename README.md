@@ -42,7 +42,7 @@ The easiest way to use this action is to add the following into your workflow fi
        runs-on: ubuntu-latest
        steps:
          - name: Create Medium Post
-           uses: philips-software/post-to-medium-action@v0.4.0
+           uses: philips-software/post-to-medium-action@v0.4.1
            with:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
              content: "content here"

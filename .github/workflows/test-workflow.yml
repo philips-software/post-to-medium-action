@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create Medium Post with Publication
-        uses: philips-software/post-to-medium-action@v0.4.0
+        uses: philips-software/post-to-medium-action@v0.4.1
         with:
            integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
            content: "Test content to see if publishing works from GH Action"
@@ -23,7 +23,7 @@ jobs:
            title: "Test post via GH Actions to Medium"
 
       - name: Create Medium Post with Author
-        uses: philips-software/post-to-medium-action@v0.4.0
+        uses: philips-software/post-to-medium-action@v0.4.1
         with:
            integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
            content: "Test content to see if publishing works from GH Action"
