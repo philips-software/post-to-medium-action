@@ -19,7 +19,7 @@ jobs:
         with:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
-          tags: latest v0.3.4
+          tags: latest v0.4.0
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
