@@ -23,7 +23,7 @@ jobs:
            title: "Test post via GH Actions to Medium"
 
       - name: Create Medium Post with Author
-        uses: philips-software/post-to-medium-action@chore/add-author-test
+        uses: philips-software/post-to-medium-action@v0.4.0
         with:
            integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
            content: "Test content to see if publishing works from GH Action"

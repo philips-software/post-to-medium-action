@@ -19,8 +19,8 @@ jobs:
         with:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
-          tags: v0.4.1-draft
-          push-branches: chore/add-author-test
+          tags: latest v0.4.0
+          push-branches: main
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
