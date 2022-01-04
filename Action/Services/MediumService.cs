@@ -23,7 +23,9 @@ namespace PostMediumGitHubAction.Services
         {
             User user = await GetCurrentMediumUserAsync();
             Publication pub = null;
-            if (Program.Settings.PublicationName != null || Program.Settings.PublicationId != null)
+            Console.WriteLine("Name: " + Program.Settings.PublicationName);
+            Console.WriteLine("Id: " + Program.Settings.PublicationId);
+            if (!string.IsNullOrEmpty(Program.Settings.PublicationName) || !string.IsNullOrEmpty(Program.Settings.PublicationId))
             {
                 pub = await FindMatchingPublicationAsync(user.Id, Program.Settings.PublicationName,
                     Program.Settings.PublicationId);
