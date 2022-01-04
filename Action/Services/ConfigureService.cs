@@ -98,11 +98,6 @@ namespace PostMediumGitHubAction.Services
                 throw new ArgumentNullException(nameof(Program.Settings.IntegrationToken),
                     $"The {nameof(Program.Settings.IntegrationToken)} parameter was not set successfully.");
 
-            if (string.IsNullOrEmpty(Program.Settings.PublicationId) &&
-                string.IsNullOrEmpty(Program.Settings.PublicationName))
-                throw new ArgumentNullException(nameof(Program.Settings.PublicationId),
-                    "Either the parameter PublicationId or PublicationName should be filled in.");
-
             if (string.IsNullOrEmpty(Program.Settings.Title))
                 throw new ArgumentNullException(nameof(Program.Settings.Title),
                     $"The {nameof(Program.Settings.Title)} parameter was not set successfully.");

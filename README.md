@@ -26,6 +26,7 @@
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 ## State
+
 > Functional
 
 ## Usage
@@ -34,7 +35,7 @@ The easiest way to use this action is to add the following into your workflow fi
 
 1. Add the following part in your workflow file:
 
-   ```
+   ```YAML
    jobs:
      post-to-medium:
        name: Post to Medium
@@ -47,12 +48,12 @@ The easiest way to use this action is to add the following into your workflow fi
              content: "content here"
              content_format: "markdown"
              notify_followers: "false"
-             publication_name: "publication"
              tags: "test,tag"
              title: "title"
              license: "all-rights-reserved"
              publish_status: "draft"
    ```
+
 ## Inputs
 
 | parameter | description | required | default |
@@ -64,13 +65,12 @@ The easiest way to use this action is to add the following into your workflow fi
 | publish_status | Post's status. Valid values are 'draft', 'public', or 'unlisted'. | `false` | draft |
 | notify_followers | Whether to notify followers that the user has published. | `false` | false |
 | license | Post's license. Valid values are 'all-rights-reserved', 'cc-40-by', 'cc-40-by-sa', 'cc-40-by-nd', 'cc-40-by-nc', 'cc-40-by-nc-nd', 'cc-40-by-nc-sa', 'cc-40-zero', 'public-domain'. | `false` | all-rights-reserved |
-| publication_name | The name of the publication the post is being created under. Either PublicationName of PublicationId should be set. | `false` |  |
-| publication_id | The id of the publication the post is being created under. If you do not know the Id, use PublicationName. | `false` |  |
+| publication_name | The name of the publication the post is being created under. If you wish to publish on a publication, either PublicationName of PublicationId should be set. If neither PublicationId or PublicationName is filled in, it will post on the user that is authentication.| `false` |  |
+| publication_id | The id of the publication the post is being created under. If you do not know the Id, use PublicationName. If you wish to publish on a publication, either PublicationName of PublicationId should be set. If neither PublicationId or PublicationName is filled in, it will post on the user that is authentication. | `false` |  |
 | canonical_url | The canonical URL of the post. If canonicalUrl was not specified in the creation of the post, this field will not be present. | `false` |  |
 | tags | The post’s tags. Provide a comma separated string without spaces. | `true` |  |
 | title | The post's title. | `true` |  |
-| parse_frontmatter | Should the action read and delete frontmatter in a markdown file. Frontmatter should start with --- and end with ---. Should be on the top of the page. When parsing frontmatter, only markdown is supported and settings will be overwritten if specified in the frontmatter. | `true` | false |
-
+| parse_frontmatter | Should the action read and delete frontmatter in a markdown file. Frontmatter should start with --- and end with ---. Should be on the top of the page. When parsing frontmatter, only markdown is supported and settings will be overwritten if specified in the frontmatter. PascalCasing and under_scored lowercasing naming convention is supported. | `true` | false |
 
 ## Outputs
 
