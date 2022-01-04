@@ -10,6 +10,7 @@ using Markdig.Extensions.Yaml;
 using Markdig.Renderers;
 using Markdig.Syntax;
 using PostMediumGitHubAction.Domain;
+using YamlDotNet.Core;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
@@ -68,13 +69,24 @@ namespace PostMediumGitHubAction.Services
             {
                 string yaml = yamlBlock.Lines.ToString();
 
-                // deserialize the yaml block into a custom type
-                IDeserializer deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(PascalCaseNamingConvention.Instance)
-                    .Build();
 
-                Settings metadata = deserializer.Deserialize<Settings>(yaml);
-                _configureService.OverrideSettings(metadata);
+                try
+                {
+                    // deserialize the yaml block into a custom type
+                    IDeserializer deserializer = new DeserializerBuilder()
+                        .WithNamingConvention(PascalCaseNamingConvention.Instance)
+                        .Build();
+                    Settings metadata = deserializer.Deserialize<Settings>(yaml);
+                    _configureService.OverrideSettings(metadata);
+                }
+                catch (YamlException e)
+                {
+                    IDeserializer deserializer = new DeserializerBuilder()
+                        .WithNamingConvention(UnderscoredNamingConvention.Instance)
+                        .Build();
+                    Settings metadata = deserializer.Deserialize<Settings>(yaml);
+                    _configureService.OverrideSettings(metadata);
+                }
                 // finally we can render the markdown content as html if necessary
                 renderer.Render(document);
                 await writer.FlushAsync();
