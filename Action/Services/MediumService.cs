@@ -22,9 +22,14 @@ namespace PostMediumGitHubAction.Services
         public async Task SubmitNewContentAsync()
         {
             User user = await GetCurrentMediumUserAsync();
-            Publication pub = await FindMatchingPublicationAsync(user.Id, Program.Settings.PublicationName,
-                Program.Settings.PublicationId);
-            if (pub == null) throw new Exception("Could not find publication, did you enter the correct name or id?");
+            Publication pub = null;
+            if (Program.Settings.PublicationName != null || Program.Settings.PublicationId != null)
+            {
+                pub = await FindMatchingPublicationAsync(user.Id, Program.Settings.PublicationName,
+                    Program.Settings.PublicationId);
+                if (pub == null) throw new Exception("Could not find publication, did you enter the correct name or id?");
+            }
+            
 
             if (!string.IsNullOrEmpty(Program.Settings.File))
                 Program.Settings.Content = await ReadFileFromPath(Program.Settings.File);
@@ -39,8 +44,15 @@ namespace PostMediumGitHubAction.Services
             Program.Settings.License = Program.Settings.License?.ToLower();
             Program.Settings.PublishStatus = Program.Settings.PublishStatus?.ToLower();
             Program.Settings.ContentFormat = Program.Settings.ContentFormat?.ToLower();
-
-            MediumCreatedPost post = await CreateNewPostUnderPublicationAsync(pub.Id);
+            MediumCreatedPost post;
+            if (pub != null)
+            {
+                post = await CreateNewPostUnderPublicationAsync(pub.Id);
+            }
+            else
+            {
+                post = await CreateNewPostWithoutPublicationAsync(user.Id);
+            }
             SetWorkflowOutputs(post);
         }
 
@@ -145,6 +157,26 @@ namespace PostMediumGitHubAction.Services
         /// <returns>Medium Created Post</returns>
         public async Task<MediumCreatedPost> CreateNewPostUnderPublicationAsync(string publicationId)
         {
+            return await CreateNewPostAsync($"publications/{publicationId}/posts");
+        }
+
+        /// <summary>
+        ///     Create a new post without a publication.
+        /// </summary>
+        /// <param name="authorId">The id of the author</param>
+        /// <returns>Medium Created Post</returns>
+        public async Task<MediumCreatedPost> CreateNewPostWithoutPublicationAsync(string authorId)
+        {
+            return await CreateNewPostAsync($"users/{authorId}/posts");
+        }
+
+        /// <summary>
+        ///     Create a new post for either a publication or author
+        /// </summary>
+        /// <param name="requestUri">The uri of the endpoint</param>
+        /// <returns>Medium Created Post</returns>
+        public async Task<MediumCreatedPost> CreateNewPostAsync(string requestUri)
+        {
             Post post = new Post
             {
                 Content = Program.Settings.Content,
@@ -155,7 +187,7 @@ namespace PostMediumGitHubAction.Services
                 CanonicalUrl = Program.Settings.CanonicalUrl,
                 License = Program.Settings.License
             };
-            HttpResponseMessage response = await Program.Client.PostAsync($"publications/{publicationId}/posts",
+            HttpResponseMessage response = await Program.Client.PostAsync($"{requestUri}",
                     new StringContent(JsonSerializer.Serialize(post), Encoding.UTF8, "application/json"))
                 .ConfigureAwait(false);
             try
