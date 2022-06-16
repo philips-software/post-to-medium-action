@@ -38,7 +38,7 @@ namespace PostMediumGitHubAction.Services
                 await ParseFrontmatter(Program.Settings.Content);
             }
 
-            _configureService.CheckForValidSettings();
+            _configureService.CheckForValidSettings(Program.Settings);
 
             // Ensure lower case, API is case sensitive sadly
             Program.Settings.License = Program.Settings.License?.ToLower();

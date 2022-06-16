@@ -92,21 +92,21 @@ namespace PostMediumGitHubAction.Services
         /// <summary>
         ///     Checks if settings are filled in correctly.
         /// </summary>
-        public void CheckForValidSettings()
+        public void CheckForValidSettings(Settings settingsToCheck)
         {
-            if (string.IsNullOrEmpty(Program.Settings.IntegrationToken))
+            if (string.IsNullOrWhiteSpace(settingsToCheck.IntegrationToken))
                 throw new ArgumentNullException(nameof(Program.Settings.IntegrationToken),
                     $"The {nameof(Program.Settings.IntegrationToken)} parameter was not set successfully.");
 
-            if (string.IsNullOrEmpty(Program.Settings.Title))
+            if (string.IsNullOrWhiteSpace(settingsToCheck.Title))
                 throw new ArgumentNullException(nameof(Program.Settings.Title),
                     $"The {nameof(Program.Settings.Title)} parameter was not set successfully.");
 
-            if (string.IsNullOrEmpty(Program.Settings.ContentFormat))
+            if (string.IsNullOrWhiteSpace(settingsToCheck.ContentFormat))
                 throw new ArgumentNullException(nameof(Program.Settings.ContentFormat),
                     $"The {nameof(Program.Settings.ContentFormat)} parameter was not set successfully.");
 
-            if (string.IsNullOrEmpty(Program.Settings.File) && string.IsNullOrEmpty(Program.Settings.Content))
+            if (string.IsNullOrWhiteSpace(settingsToCheck.File) && string.IsNullOrEmpty(settingsToCheck.Content))
                 throw new ArgumentNullException(nameof(Program.Settings.Content),
                     "Either the parameter Content or File should be filled in.");
         }

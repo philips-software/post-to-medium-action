@@ -9,10 +9,14 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="CommandLineParser" Version="2.8.0" />
-		<PackageReference Include="DotNetEnv" Version="2.2.0" />
-		<PackageReference Include="Markdig" Version="0.26.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.11.1" />
+		<PackageReference Include="AutoFixture" Version="4.17.0" />
+		<PackageReference Include="CommandLineParser" Version="2.9.1" />
+		<PackageReference Include="DotNetEnv" Version="2.3.0" />
+		<PackageReference Include="Markdig" Version="0.30.2" />
+		<PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.15.1" />
+		<PackageReference Include="NUnit" Version="3.13.3" />
+		<PackageReference Include="NUnit3TestAdapter" Version="4.2.1" />
 		<PackageReference Include="YamlDotNet" Version="11.2.1" />
 	</ItemGroup>
 
