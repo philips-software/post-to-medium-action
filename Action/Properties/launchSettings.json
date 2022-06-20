@@ -5,6 +5,11 @@
     },
     "Docker": {
       "commandName": "Docker"
+    },
+    "With CLI Args": {
+      "commandName": "Project",
+      "commandLineArgs": "--integration-token  --title 'some-title'"
+
     }
   }
 }

@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -19,31 +20,44 @@ namespace PostMediumGitHubAction.Services
     public class MediumService
     {
         private ConfigureService _configureService = new ConfigureService();
+        private HttpClient _httpClient;
+        private Settings _settings;
+
+        public MediumService(Settings settings)
+        {
+            _settings = settings;
+            _httpClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.medium.com/v1/")
+            };
+            _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {settings.IntegrationToken}");
+        }
         public async Task SubmitNewContentAsync()
         {
             User user = await GetCurrentMediumUserAsync();
             Publication pub = null;
-            if (!string.IsNullOrEmpty(Program.Settings.PublicationName) || !string.IsNullOrEmpty(Program.Settings.PublicationId))
+            if (!string.IsNullOrEmpty(_settings.PublicationName) || !string.IsNullOrEmpty(_settings.PublicationId))
             {
-                pub = await FindMatchingPublicationAsync(user.Id, Program.Settings.PublicationName,
-                    Program.Settings.PublicationId);
+                pub = await FindMatchingPublicationAsync(user.Id, _settings.PublicationName,
+                    _settings.PublicationId);
                 if (pub == null) throw new Exception("Could not find publication, did you enter the correct name or id?");
             }
             
 
-            if (!string.IsNullOrEmpty(Program.Settings.File))
-                Program.Settings.Content = await ReadFileFromPath(Program.Settings.File);
-            if (Program.Settings.ContentFormat == "markdown" && Program.Settings.ParseFrontmatter)
+            if (!string.IsNullOrEmpty(_settings.File))
+                _settings.Content = await ReadFileFromPath(_settings.File);
+            if (_settings.ContentFormat == "markdown" && _settings.ParseFrontmatter)
             {
-                await ParseFrontmatter(Program.Settings.Content);
+                await ParseFrontmatter(_settings.Content);
             }
 
-            _configureService.CheckForValidSettings(Program.Settings);
+            _configureService.CheckForValidSettings(_settings);
 
             // Ensure lower case, API is case sensitive sadly
-            Program.Settings.License = Program.Settings.License?.ToLower();
-            Program.Settings.PublishStatus = Program.Settings.PublishStatus?.ToLower();
-            Program.Settings.ContentFormat = Program.Settings.ContentFormat?.ToLower();
+            _settings.License = _settings.License?.ToLower();
+            _settings.PublishStatus = _settings.PublishStatus?.ToLower();
+            _settings.ContentFormat = _settings.ContentFormat?.ToLower();
             MediumCreatedPost post;
             if (pub != null)
             {
@@ -81,7 +95,6 @@ namespace PostMediumGitHubAction.Services
             {
                 string yaml = yamlBlock.Lines.ToString();
 
-
                 try
                 {
                     // deserialize the yaml block into a custom type
@@ -89,7 +102,7 @@ namespace PostMediumGitHubAction.Services
                         .WithNamingConvention(PascalCaseNamingConvention.Instance)
                         .Build();
                     Settings metadata = deserializer.Deserialize<Settings>(yaml);
-                    _configureService.OverrideSettings(metadata);
+                    _settings = _configureService.OverrideSettings(_settings, metadata);
                 }
                 catch (YamlException e)
                 {
@@ -97,14 +110,14 @@ namespace PostMediumGitHubAction.Services
                         .WithNamingConvention(UnderscoredNamingConvention.Instance)
                         .Build();
                     Settings metadata = deserializer.Deserialize<Settings>(yaml);
-                    _configureService.OverrideSettings(metadata);
+                    _settings = _configureService.OverrideSettings(_settings, metadata);
                 }
                 // finally we can render the markdown content as html if necessary
                 renderer.Render(document);
                 await writer.FlushAsync();
                 string html = writer.ToString();
-                Program.Settings.Content = html;
-                Program.Settings.ContentFormat = "html";
+                _settings.Content = html;
+                _settings.ContentFormat = "html";
             }
         }
 
@@ -114,7 +127,7 @@ namespace PostMediumGitHubAction.Services
         /// <returns>Medium User</returns>
         public async Task<User> GetCurrentMediumUserAsync()
         {
-            HttpResponseMessage response = await Program.Client.GetAsync("me").ConfigureAwait(false);
+            HttpResponseMessage response = await _httpClient.GetAsync("me").ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
             User user = JsonSerializer.Deserialize<User>(
                 JsonDocument.Parse(
@@ -130,11 +143,22 @@ namespace PostMediumGitHubAction.Services
         /// <param name="publicationToLookFor">Name of the Publication to look for</param>
         /// <param name="publicationId">Optional Id of the publication</param>
         /// <returns>Medium Publication</returns>
-        public async Task<Publication> FindMatchingPublicationAsync(string mediumUserId, string publicationToLookFor,
-            string publicationId)
+        public async Task<Publication> FindMatchingPublicationAsync(string mediumUserId, string publicationToLookFor, string publicationId)
         {
+            if (string.IsNullOrWhiteSpace(mediumUserId))
+            {
+                throw new ArgumentException("Missing, null or empty parameter", nameof(mediumUserId));
+
+            }
+
+            if (string.IsNullOrWhiteSpace(publicationId) && string.IsNullOrWhiteSpace(publicationToLookFor))
+            {
+                throw new ArgumentException("Missing, null or empty parameter", nameof(publicationToLookFor));
+
+            }
+
             HttpResponseMessage response =
-                await Program.Client.GetAsync($"users/{mediumUserId}/publications").ConfigureAwait(false);
+                await _httpClient.GetAsync($"users/{mediumUserId}/publications").ConfigureAwait(false);
             response.EnsureSuccessStatusCode();
 
             Publication[] publications = JsonSerializer.Deserialize<Publication[]>(
@@ -146,7 +170,7 @@ namespace PostMediumGitHubAction.Services
                 if (!string.IsNullOrEmpty(publicationToLookFor) && pub.Name == publicationToLookFor) return pub;
                 if (publicationId != null && pub.Id == publicationId) return pub;
             }
-
+            // TODO: Return error if no publication could be found.
             return null;
         }
 
@@ -179,15 +203,15 @@ namespace PostMediumGitHubAction.Services
         {
             Post post = new Post
             {
-                Content = Program.Settings.Content,
-                ContentFormat = Program.Settings.ContentFormat,
-                PublishStatus = Program.Settings.PublishStatus,
-                Tags = Program.Settings.Tags.ToArray(),
-                Title = Program.Settings.Title,
-                CanonicalUrl = Program.Settings.CanonicalUrl,
-                License = Program.Settings.License
+                Content = _settings.Content,
+                ContentFormat = _settings.ContentFormat,
+                PublishStatus = _settings.PublishStatus,
+                Tags = _settings.Tags.ToArray(),
+                Title = _settings.Title,
+                CanonicalUrl = _settings.CanonicalUrl,
+                License = _settings.License
             };
-            HttpResponseMessage response = await Program.Client.PostAsync($"{requestUri}",
+            HttpResponseMessage response = await _httpClient.PostAsync($"{requestUri}",
                     new StringContent(JsonSerializer.Serialize(post), Encoding.UTF8, "application/json"))
                 .ConfigureAwait(false);
             try
