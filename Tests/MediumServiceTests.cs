@@ -1,149 +1,309 @@
 ﻿using System;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
+using AutoFixture;
 using Moq;
+using Moq.Protected;
 using NUnit.Framework;
-using PostMediumGitHubAction;
 using PostMediumGitHubAction.Domain;
 using PostMediumGitHubAction.Services;
 
-namespace Tests
+namespace Tests;
+
+public class MediumServiceTests
 {
-    public class MediumServiceTests
+    [SetUp]
+    public void BeforeEach()
     {
-        private string integrationToken = "";
+    }
 
-        [SetUp]
-        public void BeforeEach()
+    [Test]
+    public async Task GetCurrentMediumUserAsync_ShouldReturnCurrentMediumUser()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args = { "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        HttpResponseMessage response = new()
         {
-        }
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(
+                "{\"data\":{\"id\":\"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\"username\":\"some-username\",\"name\":\"some-name\",\"url\":\"https://medium.com/@philips\",\"imageUrl\":\"https://some-url.com\"}}")
+        };
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
+        IMediumService service =
+            new MediumService(configuredSettings, new HttpClient(handlerMock.Object));
 
-        [Test]
-        public async Task GetCurrentMediumUserAsync_ShouldReturnCurrentMediumUser()
+        User user = await service.GetCurrentMediumUserAsync();
+        Assert.AreEqual(user.Id, "1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5");
+    }
+
+    [Test]
+    public void GetCurrentMediumUserAsync_WithInvalidToken_ShouldReturnException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args = { "-t", "invalidToken", "-e", "some-title", "-a", "tag", "-o", "markdown" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        HttpResponseMessage response = new()
         {
-            
-            ConfigureService configureService = new ConfigureService();
-            string[] args = new string[] { "--integration-token", integrationToken };
-            
-            Settings configuredSettings = configureService.ConfigureApplication(args);
-            MediumService service = new MediumService(configuredSettings);
-            User user = await service.GetCurrentMediumUserAsync();
-            Assert.AreEqual(user.Id, "1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5");
-        }
+            StatusCode = HttpStatusCode.Unauthorized,
+            Content = new StringContent("{\"errors\":[{\"message\":\"Token was invalid.\",\"code\":6003}]}")
+        };
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
 
-        [Test]
-        public void GetCurrentMediumUserAsync_WithInvalidToken_ShouldReturnException()
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
+        HttpRequestException? ex =
+            Assert.ThrowsAsync<HttpRequestException>(async () => await service.GetCurrentMediumUserAsync());
+        Assert.That(ex!.Message, Is.EqualTo("Response status code does not indicate success: 401 (Unauthorized)."));
+    }
+
+    [Test]
+    public void FindMatchingPublicationAsync_WithMissingOrEmptyParameters_ShouldReturnException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args = { "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        MediumService service = new(configuredSettings);
+        ArgumentException? ex =
+            Assert.ThrowsAsync<ArgumentException>(async () =>
+                await service.FindMatchingPublicationAsync(null, null, null));
+        Assert.That(ex!.Message, Is.EqualTo("Missing, null or empty parameter (Parameter 'mediumUserId')"));
+
+        ArgumentException? ex2 = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await service.FindMatchingPublicationAsync("user-id", "", ""));
+        Assert.That(ex2!.Message, Is.EqualTo("Missing, null or empty parameter (Parameter 'publicationToLookFor')"));
+    }
+
+    [Test]
+    public async Task FindMatchingPublicationAsync_WithParameters_ShouldNotReturnException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args = { "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+        var handlerMock = new Mock<HttpMessageHandler>();
+        HttpResponseMessage response = new()
         {
-            ConfigureService configureService = new ConfigureService();
-            string[] args = new string[] { "-t", integrationToken };
+            StatusCode = HttpStatusCode.OK,
+            Content = new StringContent(
+                "{\n    \"data\": [\n        {\n            \"id\": \"28ccdb7d334d\",\n            \"name\": \"Philips Experience Design Blog\",\n            \"description\": \"Learn more how we reimagine healthcare in transformative ways to ensure care is provided to those most in need.\",\n            \"url\": \"https://medium.com/philips-experience-design-blog\",\n            \"imageUrl\": \"https://cdn-images-1.medium.com/fit/c/400/400/1*wcWtJZ6UHni4n1vnRf5kpQ.jpeg\"\n        }]}")
+        };
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.IsAny<HttpRequestMessage>(),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(response);
 
-            Settings configuredSettings = configureService.ConfigureApplication(args);
-            MediumService service = new MediumService(configuredSettings);
-            HttpRequestException ex = Assert.ThrowsAsync<HttpRequestException>(async () => await service.GetCurrentMediumUserAsync());
-            Assert.That(ex!.Message, Is.EqualTo("Response status code does not indicate success: 401 (Unauthorized)."));
-        }
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
 
-        [Test]
-        public void FindMatchingPublicationAsync_WithMissingOrEmptyParameters_ShouldReturnException()
+        Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "something", null));
+        Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "", "something"));
+        Publication pub = await service.FindMatchingPublicationAsync("user-id", "", "28ccdb7d334d");
+        Assert.AreEqual(pub.Id, "28ccdb7d334d");
+
+        pub = await service.FindMatchingPublicationAsync("user-id", "Philips Experience Design Blog", "");
+        Assert.AreEqual(pub.Name, "Philips Experience Design Blog");
+    }
+
+    [Test]
+    public void SubmitNewContentAsync_WithInvalidPublication_ShouldReturnException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
+            { "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n", "some-unfindable-name" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\"data\":{\"id\":\"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\"username\":\"some-username\",\"name\":\"some-name\",\"url\":\"https://medium.com/@philips\",\"imageUrl\":\"https://some-url.com\"}}")
+            });
+
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri.AbsoluteUri.Contains(
+                        "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\n    \"data\": [\n        {\n            \"id\": \"28ccdb7d334d\",\n            \"name\": \"Philips Experience Design Blog\",\n            \"description\": \"Learn more how we reimagine healthcare in transformative ways to ensure care is provided to those most in need.\",\n            \"url\": \"https://medium.com/philips-experience-design-blog\",\n            \"imageUrl\": \"https://cdn-images-1.medium.com/fit/c/400/400/1*wcWtJZ6UHni4n1vnRf5kpQ.jpeg\"\n        }]}")
+            });
+
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
+
+        Exception? ex = Assert.ThrowsAsync<Exception>(async () => await service.SubmitNewContentAsync());
+        Assert.That(ex!.Message, Is.EqualTo("Could not find publication, did you enter the correct name or id?"));
+    }
+
+    [Test]
+    public async Task SubmitNewContentAsync_WithAuthor_ShouldCreatePostAsAuthor()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
+            { "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "--content", "Content" };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\"data\":{\"id\":\"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\"username\":\"some-username\",\"name\":\"some-name\",\"url\":\"https://medium.com/@philips\",\"imageUrl\":\"https://some-url.com\"}}")
+            });
+
+        //users/{userId}/posts
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri.AbsoluteUri.Contains(
+                        "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/posts")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.Created,
+                Content = new StringContent(
+                    "{ \"data\": {\n        \"id\": \"e855b9f3048a\",\n        \"title\": \"some-content\",\n        \"authorId\": \"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\n        \"url\": \"https://medium.com/@philips/some-content-e855b9f3048a\",\n        \"canonicalUrl\": \"\",\n        \"publishStatus\": \"\",\n        \"publishedAt\": 1655898280492,\n        \"license\": \"\",\n        \"licenseUrl\": \"https://policy.medium.com/medium-terms-of-service-9db0094a1e0f\",\n        \"tags\": [],\n        \"publicationId\": \"536bc4016034\"\n    }}")
+            });
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
+
+        Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
+        MediumCreatedPost post = await service.SubmitNewContentAsync();
+        Assert.AreEqual(post.AuthorId, "1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5");
+    }
+
+    [Test]
+    public async Task SubmitNewContentAsync_WithPublication_ShouldCreatePostAsPublication()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
         {
-            ConfigureService configureService = new ConfigureService();
-            string[] args = new string[] { "-t", integrationToken };
+            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--content", "Content"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
 
-            Settings configuredSettings = configureService.ConfigureApplication(args);
-            MediumService service = new MediumService(configuredSettings);
-            ArgumentException ex = Assert.ThrowsAsync<ArgumentException>(async () => await service.FindMatchingPublicationAsync(null, null, null));
-            Assert.That(ex!.Message, Is.EqualTo("Missing, null or empty parameter (Parameter 'mediumUserId')"));
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\"data\":{\"id\":\"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\"username\":\"some-username\",\"name\":\"some-name\",\"url\":\"https://medium.com/@philips\",\"imageUrl\":\"https://some-url.com\"}}")
+            });
 
-            ArgumentException ex2 = Assert.ThrowsAsync<ArgumentException>(async () => await service.FindMatchingPublicationAsync("user-id", "", ""));
-            Assert.That(ex2!.Message, Is.EqualTo("Missing, null or empty parameter (Parameter 'publicationToLookFor')"));
-        }
+        //users/{userId}/publications
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri.AbsoluteUri.Contains(
+                        "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\n    \"data\": [\n        {\n            \"id\": \"28ccdb7d334d\",\n            \"name\": \"Philips Experience Design Blog\",\n            \"description\": \"Learn more how we reimagine healthcare in transformative ways to ensure care is provided to those most in need.\",\n            \"url\": \"https://medium.com/philips-experience-design-blog\",\n            \"imageUrl\": \"https://cdn-images-1.medium.com/fit/c/400/400/1*wcWtJZ6UHni4n1vnRf5kpQ.jpeg\"\n        }]}")
+            });
+        //publications/{publicationId}/posts
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/publications/28ccdb7d334d/posts")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.Created,
+                Content = new StringContent(
+                    "{ \"data\": {\n        \"id\": \"e855b9f3048a\",\n        \"title\": \"some-content\",\n        \"authorId\": \"1620245129e9d0ed50b8ebf3416552bed81e7100b561f1ab0f92f071739bc6033\",\n        \"url\": \"https://medium.com/@philips/some-content-e855b9f3048a\",\n        \"canonicalUrl\": \"\",\n        \"publishStatus\": \"\",\n        \"publishedAt\": 1655898280492,\n        \"license\": \"\",\n        \"licenseUrl\": \"https://policy.medium.com/medium-terms-of-service-9db0094a1e0f\",\n        \"tags\": [],\n        \"publicationId\": \"536bc4016034\"\n    }}")
+            });
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
 
-        [Test]
-        public void FindMatchingPublicationAsync_WithParameters_ShouldNotReturnException()
+        Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
+        MediumCreatedPost post = await service.SubmitNewContentAsync();
+        Assert.AreEqual(post.Title, "some-content");
+    }
+
+    [Test]
+    public void SetWorkflowOutputs_WithMediumPost_ShouldLogCorrectOutputs()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
         {
-            ConfigureService configureService = new ConfigureService();
-            string[] args = new string[] { "-t", integrationToken };
+            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--content", "Content"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+        Fixture fixture = new();
+        MediumCreatedPost fakePost = fixture.Create<MediumCreatedPost>();
+        var handlerMock = new Mock<HttpMessageHandler>();
 
-            Settings configuredSettings = configureService.ConfigureApplication(args);
-            MediumService service = new MediumService(configuredSettings);
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
 
-            //TODO: Mock API Call
-            Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "something", null));
-            Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "", "something"));
-        }
+        Assert.DoesNotThrow(() => service.SetWorkflowOutputs(fakePost));
+    }
 
-        [Test]
-        public void SubmitNewContentAsync_WithInvalidPublication_ShouldReturnException()
+    [Test]
+    public void SetWorkflowOutputs_WithoutMediumPost_ShouldReturnException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
         {
-            // MediumService service = new MediumService(integrationToken);
-            Mock<MediumService> mediumServiceMock = new Mock<MediumService>(integrationToken);
-            MediumService service = mediumServiceMock.Object;
-            mediumServiceMock.Setup(service => service.FindMatchingPublicationAsync("user-id", "", ""))
-                .ReturnsAsync(() => null);
+            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--content", "Content"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+        var handlerMock = new Mock<HttpMessageHandler>();
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
 
-            Exception ex = Assert.ThrowsAsync<Exception>(async () => await service.SubmitNewContentAsync());
-            Assert.That(ex!.Message, Is.EqualTo("Could not find publication, did you enter the correct name or id?"));
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithAuthor_ShouldCreatePostAsAuthor()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithPublication_ShouldCreatePostAsPublication()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithParseFrontmatterAndMarkdown_ShouldParseFrontmatter()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithParseFrontmatterWithoutMarkdown_ShouldNotParseFrontmatter()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithCorrectFilePath_ShouldHaveValidSettings()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithIncorrectFilePath_ShouldReturnException()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithUpperCaseSettings_ShouldMigrateToLower()
-        {
-
-        }
-
-        [Test]
-        public void SubmitNewContentAsync_WithSuccessfullCreation_ShouldSetCorrectWorkflowOutputs()
-        {
-
-        }
-
-        [Test]
-        public void SetWorkflowOutputs_WithMediumPost_ShouldLogCorrectOutputs()
-        {
-
-        }
-
-        [Test]
-        public void SetWorkflowOutputs_WithoutMediumPost_ShouldReturnException()
-        {
-
-        }
-
+        Assert.Throws<ArgumentNullException>(() => service.SetWorkflowOutputs(null));
     }
 }

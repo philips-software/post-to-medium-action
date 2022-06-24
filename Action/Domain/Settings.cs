@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using CommandLine;
 
-namespace PostMediumGitHubAction
+namespace PostMediumGitHubAction.Domain
 {
     public class Settings
     {

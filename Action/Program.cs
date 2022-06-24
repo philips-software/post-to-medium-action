@@ -1,22 +1,20 @@
-﻿using System;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using DotNetEnv;
+using PostMediumGitHubAction.Domain;
 using PostMediumGitHubAction.Services;
 
-namespace PostMediumGitHubAction
-{
-    internal class Program
-    {
+namespace PostMediumGitHubAction;
 
-        private static async Task Main(string[] args)
-        {
-            // Load .env file if present
-            // Env.TraversePath().Load();
-            ConfigureService configureService = new ConfigureService();
-            Settings configuredSettings = configureService.ConfigureApplication(args);
-            MediumService mediumService = new MediumService(configuredSettings);
-            await mediumService.SubmitNewContentAsync();
-        }
+internal static class Program
+{
+    private static async Task Main(string[] args)
+    {
+        // Load .env file if present
+        Env.TraversePath().Load();
+        IConfigureService configureService = new ConfigureService();
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+        IMediumService mediumService = new MediumService(configuredSettings);
+        MediumCreatedPost post = await mediumService.SubmitNewContentAsync();
+        mediumService.SetWorkflowOutputs(post);
     }
 }
