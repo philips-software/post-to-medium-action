@@ -29,7 +29,8 @@ jobs:
       - name: Upload to SonarQube
         run: |
           dotnet tool install --global dotnet-sonarscanner
-          dotnet sonarscanner begin /k:"philips-software_post-to-medium-action" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.opencover.reportsPaths=coverage.xml
+          dotnet tool install --global JetBrains.dotCover.GlobalTool
+          dotnet sonarscanner begin /k:"philips-software_post-to-medium-action" /d:sonar.host.url="https://sonarcloud.io" /o:"philips-software" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html
           dotnet build Action/PostMediumGitHubAction.sln
-          dotnet test --logger trx --no-restore --verbosity normal --collect:"XPLat Code Coverage" --results-directory "coverage.xml"
+          dotnet dotcover test Action/PostMediumGitHubAction.sln --dcReportType=HTML
           dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
