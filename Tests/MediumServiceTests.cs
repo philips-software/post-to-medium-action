@@ -44,7 +44,7 @@ public class MediumServiceTests
             new MediumService(configuredSettings, new HttpClient(handlerMock.Object));
 
         User user = await service.GetCurrentMediumUserAsync();
-        Assert.AreEqual(user.Id, "1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5");
+        Assert.AreEqual("1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5", user.Id);
     }
 
     [Test]
@@ -118,7 +118,7 @@ public class MediumServiceTests
         Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "something", null));
         Assert.DoesNotThrowAsync(async () => await service.FindMatchingPublicationAsync("user-id", "", "something"));
         Publication pub = await service.FindMatchingPublicationAsync("user-id", "", "28ccdb7d334d");
-        Assert.AreEqual(pub.Id, "28ccdb7d334d");
+        Assert.AreEqual("28ccdb7d334d", pub.Id);
 
         pub = await service.FindMatchingPublicationAsync("user-id", "Philips Experience Design Blog", "");
         Assert.AreEqual(pub.Name, "Philips Experience Design Blog");
@@ -151,7 +151,7 @@ public class MediumServiceTests
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.Is<HttpRequestMessage>(x =>
-                    x.RequestUri.AbsoluteUri.Contains(
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains(
                         "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
@@ -195,7 +195,7 @@ public class MediumServiceTests
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.Is<HttpRequestMessage>(x =>
-                    x.RequestUri.AbsoluteUri.Contains(
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains(
                         "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/posts")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
@@ -208,7 +208,7 @@ public class MediumServiceTests
 
         Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
         MediumCreatedPost post = await service.SubmitNewContentAsync();
-        Assert.AreEqual(post.AuthorId, "1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5");
+        Assert.AreEqual("1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5", post.AuthorId);
     }
 
     [Test]
@@ -242,7 +242,7 @@ public class MediumServiceTests
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.Is<HttpRequestMessage>(x =>
-                    x.RequestUri.AbsoluteUri.Contains(
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains(
                         "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
@@ -257,6 +257,7 @@ public class MediumServiceTests
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
                 ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null &&
                     x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/publications/28ccdb7d334d/posts")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
@@ -269,7 +270,7 @@ public class MediumServiceTests
 
         Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
         MediumCreatedPost post = await service.SubmitNewContentAsync();
-        Assert.AreEqual(post.Title, "some-content");
+        Assert.AreEqual("some-content", post.Title);
     }
 
     [Test]

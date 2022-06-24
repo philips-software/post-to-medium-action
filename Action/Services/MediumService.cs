@@ -19,16 +19,17 @@ namespace PostMediumGitHubAction.Services;
 
 public class MediumService : IMediumService
 {
-    private ConfigureService _configureService = new();
-    private HttpClient _httpClient;
+    private readonly IConfigureService _configureService = new ConfigureService();
+    private readonly HttpClient _httpClient;
     private Settings _settings;
+    private const string ApiMediumUrl = "https://api.medium.com/v1/";
 
     public MediumService(Settings settings)
     {
         _settings = settings;
         _httpClient = new HttpClient
         {
-            BaseAddress = new Uri("https://api.medium.com/v1/")
+            BaseAddress = new Uri(ApiMediumUrl)
         };
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {settings.IntegrationToken}");
@@ -38,7 +39,7 @@ public class MediumService : IMediumService
     {
         _settings = settings;
         _httpClient = httpClient;
-        _httpClient.BaseAddress = new Uri("https://api.medium.com/v1/");
+        _httpClient.BaseAddress = new Uri(ApiMediumUrl);
         _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {settings.IntegrationToken}");
     }
@@ -51,7 +52,8 @@ public class MediumService : IMediumService
         {
             pub = await FindMatchingPublicationAsync(user.Id, _settings.PublicationName,
                 _settings.PublicationId);
-            if (pub == null) throw new Exception("Could not find publication, did you enter the correct name or id?");
+            if (pub == null)
+                throw new ArgumentException("Could not find publication, did you enter the correct name or id?");
         }
 
         if (!string.IsNullOrEmpty(_settings.File))
@@ -65,12 +67,10 @@ public class MediumService : IMediumService
         _settings.License = _settings.License?.ToLower();
         _settings.PublishStatus = _settings.PublishStatus?.ToLower();
         _settings.ContentFormat = _settings.ContentFormat?.ToLower();
-        MediumCreatedPost post;
         if (pub != null)
-            post = await CreateNewPostUnderPublicationAsync(pub.Id);
-        else
-            post = await CreateNewPostWithoutPublicationAsync(user.Id);
-        return post;
+            return await CreateNewPostUnderPublicationAsync(pub.Id);
+
+        return await CreateNewPostWithoutPublicationAsync(user.Id);
     }
 
     /// <summary>
@@ -107,7 +107,7 @@ public class MediumService : IMediumService
                 Settings metadata = deserializer.Deserialize<Settings>(yaml);
                 _settings = _configureService.OverrideSettings(_settings, metadata);
             }
-            catch (YamlException e)
+            catch (YamlException)
             {
                 IDeserializer deserializer = new DeserializerBuilder()
                     .WithNamingConvention(UnderscoredNamingConvention.Instance)
@@ -156,6 +156,12 @@ public class MediumService : IMediumService
         if (string.IsNullOrWhiteSpace(publicationId) && string.IsNullOrWhiteSpace(publicationToLookFor))
             throw new ArgumentException("Missing, null or empty parameter", nameof(publicationToLookFor));
 
+        return await RetrievePublicationAsync(mediumUserId, publicationToLookFor, publicationId);
+    }
+
+    private async Task<Publication> RetrievePublicationAsync(string mediumUserId, string publicationToLookFor,
+        string publicationId)
+    {
         HttpResponseMessage response =
             await _httpClient.GetAsync($"users/{mediumUserId}/publications").ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
@@ -164,13 +170,14 @@ public class MediumService : IMediumService
             JsonDocument.Parse(
                     await response.Content.ReadAsByteArrayAsync())
                 .RootElement.EnumerateObject().First().Value.ToString());
+        if (publications == null) return null;
         foreach (Publication pub in publications)
         {
             if (!string.IsNullOrEmpty(publicationToLookFor) && pub.Name == publicationToLookFor) return pub;
+
             if (publicationId != null && pub.Id == publicationId) return pub;
         }
 
-        // TODO: Return error if no publication could be found.
         return null;
     }
 
@@ -224,7 +231,9 @@ public class MediumService : IMediumService
                 JsonDocument.Parse(
                         await response.Content.ReadAsByteArrayAsync())
                     .RootElement.EnumerateObject().First().Value.ToString());
-            throw new Exception("Something went wrong when posting: " + errors[0].Message);
+            if (errors != null)
+                throw new HttpRequestException("Something went wrong when posting: " + errors[0].Message);
+            throw;
         }
 
         MediumCreatedPost createdPostData = JsonSerializer.Deserialize<MediumCreatedPost>(
@@ -239,7 +248,7 @@ public class MediumService : IMediumService
     /// </summary>
     /// <param name="filePath">Path of the file</param>
     /// <returns>String of content</returns>
-    private async Task<string> ReadFileFromPath(string filePath)
+    private static async Task<string> ReadFileFromPath(string filePath)
     {
         if (!File.Exists(filePath)) throw new FileNotFoundException();
         string result = await File.ReadAllTextAsync(filePath);
@@ -256,7 +265,7 @@ public class MediumService : IMediumService
     /// <returns></returns>
     public void SetWorkflowOutputs(MediumCreatedPost post)
     {
-        if (post == null) throw new ArgumentNullException();
+        if (post == null) throw new ArgumentNullException(nameof(post), "Medium Post is null");
         Console.WriteLine($"::set-output name=id::{post.Id}");
         Console.WriteLine($"::set-output name=authorId::{post.AuthorId}");
         Console.WriteLine($"::set-output name=canonicalUrl::{post.CanonicalUrl}");

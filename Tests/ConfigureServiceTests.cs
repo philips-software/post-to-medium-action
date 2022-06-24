@@ -4,12 +4,12 @@ using NUnit.Framework;
 using PostMediumGitHubAction.Domain;
 using PostMediumGitHubAction.Services;
 
-namespace PostMediumGitHubAction.Tests;
+namespace Tests;
 
 public class ConfigureServiceTests
 {
-    private Fixture _fixture;
-    private ConfigureService _configureService;
+    private Fixture _fixture = null!;
+    private ConfigureService _configureService = null!;
 
     [SetUp]
     public void BeforeEach()

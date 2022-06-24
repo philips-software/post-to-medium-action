@@ -73,15 +73,15 @@ public class ConfigureService : IConfigureService
     {
         if (string.IsNullOrWhiteSpace(settingsToCheck.IntegrationToken))
             throw new ArgumentNullException(nameof(settingsToCheck.IntegrationToken),
-                $"The {nameof(settingsToCheck.IntegrationToken)} parameter was not set successfully.");
+                "The Integration Token parameter was not set successfully.");
 
         if (string.IsNullOrWhiteSpace(settingsToCheck.Title))
             throw new ArgumentNullException(nameof(settingsToCheck.Title),
-                $"The {nameof(settingsToCheck.Title)} parameter was not set successfully.");
+                "The Title parameter was not set successfully.");
 
         if (string.IsNullOrWhiteSpace(settingsToCheck.ContentFormat))
             throw new ArgumentNullException(nameof(settingsToCheck.ContentFormat),
-                $"The {nameof(settingsToCheck.ContentFormat)} parameter was not set successfully.");
+                "The Content Format parameter was not set successfully.");
 
         if (string.IsNullOrWhiteSpace(settingsToCheck.File) && string.IsNullOrEmpty(settingsToCheck.Content))
             throw new ArgumentNullException(nameof(settingsToCheck.Content),
