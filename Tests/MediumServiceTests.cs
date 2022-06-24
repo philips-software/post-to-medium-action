@@ -163,7 +163,8 @@ public class MediumServiceTests
 
         MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
 
-        Exception? ex = Assert.ThrowsAsync<Exception>(async () => await service.SubmitNewContentAsync());
+        ArgumentException? ex =
+            Assert.ThrowsAsync<ArgumentException>(async () => await service.SubmitNewContentAsync());
         Assert.That(ex!.Message, Is.EqualTo("Could not find publication, did you enter the correct name or id?"));
     }
 
