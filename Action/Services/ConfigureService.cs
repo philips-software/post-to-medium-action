@@ -79,7 +79,8 @@ public class ConfigureService : IConfigureService
             throw new ArgumentNullException(nameof(settingsToCheck.Title),
                 "The Title parameter was not set successfully.");
 
-        if (string.IsNullOrWhiteSpace(settingsToCheck.ContentFormat))
+        if (string.IsNullOrWhiteSpace(settingsToCheck.ContentFormat) ||
+            (!settingsToCheck.ContentFormat.Equals("markdown") && !settingsToCheck.ContentFormat.Equals("html")))
             throw new ArgumentNullException(nameof(settingsToCheck.ContentFormat),
                 "The Content Format parameter was not set successfully.");
 

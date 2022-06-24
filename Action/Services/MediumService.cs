@@ -230,10 +230,10 @@ public class MediumService : IMediumService
             var errors = JsonSerializer.Deserialize<MediumError[]>(
                 JsonDocument.Parse(
                         await response.Content.ReadAsByteArrayAsync())
-                    .RootElement.EnumerateObject().First().Value.ToString());
+                    .RootElement.EnumerateObject()
+                    .First().Value.ToString());
             if (errors != null)
                 throw new HttpRequestException("Something went wrong when posting: " + errors[0].Message);
-            throw;
         }
 
         MediumCreatedPost createdPostData = JsonSerializer.Deserialize<MediumCreatedPost>(

@@ -8,7 +8,7 @@
     },
     "With CLI Args": {
       "commandName": "Project",
-      "commandLineArgs": "--integration-token tokenHere --title 'some-title' -a 'test' --content-format html --content 'some-content'"
+      "commandLineArgs": "--integration-token 29aaebc868597825048ce6d1e03743ed9d519cf8f3e3b1173220e3ba0b279b8b2 --title 'some-title' -a 'test' --content-format html --content 'some-content'"
     }
   }
 }

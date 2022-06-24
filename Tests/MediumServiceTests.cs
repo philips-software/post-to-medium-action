@@ -14,11 +14,6 @@ namespace Tests;
 
 public class MediumServiceTests
 {
-    [SetUp]
-    public void BeforeEach()
-    {
-    }
-
     [Test]
     public async Task GetCurrentMediumUserAsync_ShouldReturnCurrentMediumUser()
     {
@@ -121,7 +116,7 @@ public class MediumServiceTests
         Assert.AreEqual("28ccdb7d334d", pub.Id);
 
         pub = await service.FindMatchingPublicationAsync("user-id", "Philips Experience Design Blog", "");
-        Assert.AreEqual(pub.Name, "Philips Experience Design Blog");
+        Assert.AreEqual("Philips Experience Design Blog", pub.Name);
     }
 
     [Test]
@@ -137,7 +132,8 @@ public class MediumServiceTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
@@ -169,6 +165,71 @@ public class MediumServiceTests
     }
 
     [Test]
+    public void SubmitNewContentAsync_WithMediumApiReturningErrors_ShouldReturnHttpRequestException()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
+        {
+            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--content", "Content"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        var handlerMock = new Mock<HttpMessageHandler>();
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\"data\":{\"id\":\"1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5\",\"username\":\"some-username\",\"name\":\"some-name\",\"url\":\"https://medium.com/@philips\",\"imageUrl\":\"https://some-url.com\"}}")
+            });
+
+        //users/{userId}/publications
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains(
+                        "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(
+                    "{\n    \"data\": [\n        {\n            \"id\": \"28ccdb7d334d\",\n            \"name\": \"Philips Experience Design Blog\",\n            \"description\": \"Learn more how we reimagine healthcare in transformative ways to ensure care is provided to those most in need.\",\n            \"url\": \"https://medium.com/philips-experience-design-blog\",\n            \"imageUrl\": \"https://cdn-images-1.medium.com/fit/c/400/400/1*wcWtJZ6UHni4n1vnRf5kpQ.jpeg\"\n        }]}")
+            });
+        //publications/{publicationId}/posts
+        handlerMock
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null &&
+                    x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/publications/28ccdb7d334d/posts")),
+                ItExpr.IsAny<CancellationToken>())
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.BadRequest,
+                Content = new StringContent(
+                    "{\n    \"errors\": [\n        {\n            \"message\": \"Invalid contentFormat specified: markdown,\",\n            \"code\": 2003\n        }\n    ]\n}")
+            });
+
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
+
+        HttpRequestException? ex =
+            Assert.ThrowsAsync<HttpRequestException>(async () => await service.SubmitNewContentAsync());
+        Assert.That(ex!.Message,
+            Is.EqualTo("Something went wrong when posting: Invalid contentFormat specified: markdown,"));
+    }
+
+    [Test]
     public async Task SubmitNewContentAsync_WithAuthor_ShouldCreatePostAsAuthor()
     {
         IConfigureService configureService = new ConfigureService();
@@ -181,7 +242,8 @@ public class MediumServiceTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
@@ -228,7 +290,8 @@ public class MediumServiceTests
             .Protected()
             .Setup<Task<HttpResponseMessage>>(
                 "SendAsync",
-                ItExpr.Is<HttpRequestMessage>(x => x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
+                ItExpr.Is<HttpRequestMessage>(x =>
+                    x.RequestUri != null && x.RequestUri.AbsoluteUri.Contains("https://api.medium.com/v1/me")),
                 ItExpr.IsAny<CancellationToken>())
             .ReturnsAsync(new HttpResponseMessage
             {
