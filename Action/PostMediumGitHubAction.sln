@@ -1,9 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.31729.503
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PostMediumGitHubAction", "PostMediumGitHubAction.csproj", "{5AC03D05-3619-46AC-92FA-26E5A34E0689}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests", "..\Tests\Tests.csproj", "{03DC0FC4-81D2-4CDD-9335-A11AC0E7DAA7}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{5AC03D05-3619-46AC-92FA-26E5A34E0689}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5AC03D05-3619-46AC-92FA-26E5A34E0689}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5AC03D05-3619-46AC-92FA-26E5A34E0689}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03DC0FC4-81D2-4CDD-9335-A11AC0E7DAA7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03DC0FC4-81D2-4CDD-9335-A11AC0E7DAA7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03DC0FC4-81D2-4CDD-9335-A11AC0E7DAA7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03DC0FC4-81D2-4CDD-9335-A11AC0E7DAA7}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

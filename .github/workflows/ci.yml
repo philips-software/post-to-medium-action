@@ -1,0 +1,33 @@
+name: Continuous Integration
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup .NET Core SDK 6.0.x
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+
+      - name: Install dependencies
+        run: dotnet restore Action/PostMediumGitHubAction.sln
+
+      - name: Build
+        run: dotnet build Action/PostMediumGitHubAction.sln --configuration Release --no-restore
+
+      - name: Test
+        run: dotnet test Action/PostMediumGitHubAction.sln --no-restore
+
+      - name: Upload to SonarQube
+        run: |
+          dotnet tool install --global dotnet-sonarscanner
+          dotnet tool install --global JetBrains.dotCover.GlobalTool
+          dotnet sonarscanner begin /k:"philips-software_post-to-medium-action" /d:sonar.host.url="https://sonarcloud.io" /o:"philips-software" /d:sonar.login="${{ secrets.SONAR_TOKEN }}" /d:sonar.cs.dotcover.reportsPaths=dotCover.Output.html
+          dotnet build Action/PostMediumGitHubAction.sln
+          dotnet dotcover test Action/PostMediumGitHubAction.sln --dcReportType=HTML
+          dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
