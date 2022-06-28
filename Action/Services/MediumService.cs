@@ -24,15 +24,8 @@ public class MediumService : IMediumService
     private Settings _settings;
     private const string ApiMediumUrl = "https://api.medium.com/v1/";
 
-    public MediumService(Settings settings)
+    public MediumService(Settings settings) : this(settings, new HttpClient())
     {
-        _settings = settings;
-        _httpClient = new HttpClient
-        {
-            BaseAddress = new Uri(ApiMediumUrl)
-        };
-        _httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {settings.IntegrationToken}");
     }
 
     public MediumService(Settings settings, HttpClient httpClient)
@@ -74,8 +67,8 @@ public class MediumService : IMediumService
     }
 
     /// <summary>
-    /// Parse markdown content and look for frontmatter.
-    /// Convert the markdown into HTML to remove the frontmatter.
+    ///     Parse markdown content and look for frontmatter.
+    ///     Convert the markdown into HTML to remove the frontmatter.
     /// </summary>
     /// <param name="content">Content in markdown</param>
     /// <returns></returns>
@@ -166,7 +159,7 @@ public class MediumService : IMediumService
             await _httpClient.GetAsync($"users/{mediumUserId}/publications").ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
-        var publications = JsonSerializer.Deserialize<Publication[]>(
+        Publication[] publications = JsonSerializer.Deserialize<Publication[]>(
             JsonDocument.Parse(
                     await response.Content.ReadAsByteArrayAsync())
                 .RootElement.EnumerateObject().First().Value.ToString());
@@ -227,7 +220,7 @@ public class MediumService : IMediumService
         }
         catch (HttpRequestException)
         {
-            var errors = JsonSerializer.Deserialize<MediumError[]>(
+            MediumError[] errors = JsonSerializer.Deserialize<MediumError[]>(
                 JsonDocument.Parse(
                         await response.Content.ReadAsByteArrayAsync())
                     .RootElement.EnumerateObject()

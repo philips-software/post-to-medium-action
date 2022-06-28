@@ -249,7 +249,7 @@ public class MediumServiceTests
     }
 
     [Test]
-    public void SetWorkflowOutputs_WithMediumPost_ShouldLogCorrectOutputs()
+    public void SetWorkflowOutputs_WithMediumPost_ShouldSetOutputs()
     {
         IConfigureService configureService = new ConfigureService();
         string[] args =

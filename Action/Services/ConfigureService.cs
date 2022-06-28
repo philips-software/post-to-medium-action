@@ -9,8 +9,8 @@ public class ConfigureService : IConfigureService
 {
     /// <summary>
     ///     Configure the application with correct settings.
-    /// First Set environment variables
-    /// Command line arguments will then override environment variables
+    ///     First Set environment variables
+    ///     Command line arguments will then override environment variables
     /// </summary>
     public Settings ConfigureApplication(string[] args)
     {
@@ -42,7 +42,7 @@ public class ConfigureService : IConfigureService
     }
 
     /// <summary>
-    /// Override Program Settings with values from parameter if they are not null.
+    ///     Override Program Settings with values from parameter if they are not null.
     /// </summary>
     /// <param name="originalSettings">Settings that are suppose to be overwritten.</param>
     /// <param name="settingsToReplaceWith">Settings that can be used to override.</param>
@@ -82,7 +82,7 @@ public class ConfigureService : IConfigureService
         if (string.IsNullOrWhiteSpace(settingsToCheck.ContentFormat) ||
             (!settingsToCheck.ContentFormat.Equals("markdown") && !settingsToCheck.ContentFormat.Equals("html")))
             throw new ArgumentNullException(nameof(settingsToCheck.ContentFormat),
-                "The Content Format parameter was not set successfully.");
+                "The Content Format parameter was not set successfully. Valid options are: 'markdown' or 'html'.");
 
         if (string.IsNullOrWhiteSpace(settingsToCheck.File) && string.IsNullOrEmpty(settingsToCheck.Content))
             throw new ArgumentNullException(nameof(settingsToCheck.Content),

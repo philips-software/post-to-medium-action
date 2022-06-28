@@ -5,17 +5,14 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-22.04
-    strategy:
-      matrix:
-        dotnet-version: ["6.0.x"]
 
     steps:
       - uses: actions/checkout@v3
 
-      - name: Setup .NET Core SDK ${{ matrix.dotnet-version }}
+      - name: Setup .NET Core SDK 6.0.x
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: ${{ matrix.dotnet-version }}
+          dotnet-version: 6.0.x
 
       - name: Install dependencies
         run: dotnet restore Action/PostMediumGitHubAction.sln
