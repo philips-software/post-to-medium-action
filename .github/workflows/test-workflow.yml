@@ -10,6 +10,7 @@ jobs:
   execute-action:
     name: Use internal GH Action
     runs-on: ubuntu-latest
+    environment: prod
     steps:
       - name: Create Medium Post with Publication
         uses: philips-software/post-to-medium-action@v0.4.1
