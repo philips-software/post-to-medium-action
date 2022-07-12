@@ -75,36 +75,35 @@ outputs:
     description: "URL to the Medium post."
 
 runs:
-  using: 'docker'
-  image: 'docker://ghcr.io/philips-software/post-to-medium-action:v0.4.1'
+  using: "docker"
+  image: "docker://ghcr.io/philips-software/post-to-medium-action:v0.4.2"
   args:
-    - '--integration-token'
+    - "--integration-token"
     - ${{ inputs.integration_token }}
-    - '--title'
+    - "--title"
     - ${{ inputs.title }}
-    - '--tags'
+    - "--tags"
     - ${{ inputs.tags }}
-    - '--canonical-url'
+    - "--canonical-url"
     - ${{ inputs.canonical_url }}
-    - '--publish-status'
+    - "--publish-status"
     - ${{ inputs.publish_status }}
-    - '--license'
+    - "--license"
     - ${{ inputs.license }}
-    - '--publication-id'
+    - "--publication-id"
     - ${{ inputs.publication_id }}
-    - '--publication-name'
+    - "--publication-name"
     - ${{ inputs.publication_name }}
-    - '--notify-followers'
+    - "--notify-followers"
     - ${{ inputs.notify_followers }}
-    - '--content-format'
+    - "--content-format"
     - ${{ inputs.content_format }}
-    - '--content'
+    - "--content"
     - ${{ inputs.content }}
-    - '--file'
+    - "--file"
     - ${{ inputs.file }}
-    - '--parse-frontmatter'
+    - "--parse-frontmatter"
     - ${{ inputs.parse_frontmatter }}
-
 
 branding:
   icon: "book"
