@@ -20,7 +20,7 @@ jobs:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
           tags: latest ${{ github.ref_name }}
-          push-branches: main ${{ github.ref_name }}
+          push-branches: main ${{ github.ref }}
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
