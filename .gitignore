@@ -393,3 +393,5 @@ FodyWeavers.xsd
 # Test files for different content types
 test.md
 test.html
+
+cosign.key

@@ -15,14 +15,25 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Build Docker Images
-        uses: philips-software/docker-ci-scripts@main
+        uses: philips-software/docker-ci-scripts@v4.4.0
         with:
           dockerfile: ./Action/Dockerfile
           image-name: post-to-medium-action
           tags: latest ${{ github.ref_name }}
           push-on-git-tag: "true"
+          sbom: true
+          cosign: true
+          slsa-provenance: true
         env:
           DOCKER_USERNAME: ${{ github.actor }}
           DOCKER_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
           DOCKER_REGISTRY: ghcr.io/philips-software
           GITHUB_ORGANIZATION: philips-software
+          COSIGN_PRIVATE_KEY: ${{ secrets.COSIGN_PRIVATE }}
+          COSIGN_PASSWORD: ${{ secrets.COSIGN_PASSWORD }}
+          COSIGN_PUBLIC_KEY: ${{ secrets.COSIGN_PUBLIC }}
+
+      - name: Verify Image & SLSA Provenance
+        run: |
+          cosign verify --key cosign.pub ghcr.io/philips-software/post-to-medium-action:${{ github.ref_name }}
+          cosign verify-attestation --key cosign.pub ghcr.io/philips-software/post-to-medium-action:${{ github.ref_name }} | jq '.payload |= @base64d | .payload | fromjson | select(.predicateType=="https://slsa.dev/provenance/v0.2" ) | .'
