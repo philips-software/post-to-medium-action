@@ -31,3 +31,14 @@ jobs:
           dotnet build Action/PostMediumGitHubAction.sln
           dotnet dotcover test Action/PostMediumGitHubAction.sln --dcReportType=HTML
           dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
+
+      - uses: philips-software/sbom-tool-installer-action@v1.0.0
+
+      - name: Generate SBOM
+        run: |
+          mkdir sbom
+          sbom-tool generate -b ./sbom -bc . -pn post-to-medium-action -pv v0.4.2 -nsb https://github.com/philips-software/post-to-medium-action
+      - uses: actions/upload-artifact@v3
+        with:
+          name: sbom
+          path: ./sbom/
