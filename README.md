@@ -49,7 +49,7 @@ Add the following part in your workflow file:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
              content: |
                # Story Title
-               # an optional subtitle
+               ## an optional subtitle
                
                Lorem ipsum content Lorem ipsum content Lorem ipsum
                content Lorem ipsum content Lorem ipsum content Lorem 
