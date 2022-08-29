@@ -33,9 +33,11 @@
 
 The easiest way to use this action is to add the following into your workflow file. Additional configuration might be necessary to fit your usecase.
 
-1. Add the following part in your workflow file:
+Add the following part in your workflow file:
 
-   ```YAML
+#### Using `content` 
+
+   ```yml
    jobs:
      post-to-medium:
        name: Post to Medium
@@ -45,7 +47,36 @@ The easiest way to use this action is to add the following into your workflow fi
            uses: philips-software/post-to-medium-action@v0.4.1
            with:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
-             content: "content here"
+             content: |
+               # Story Title
+               # an optional subtitle
+               
+               Lorem ipsum content Lorem ipsum content Lorem ipsum
+               content Lorem ipsum content Lorem ipsum content Lorem 
+               ipsum content Lorem ipsum content Lorem ipsum content.
+             content_format: "markdown"
+             notify_followers: "false"
+             tags: "test,tag"
+             title: "title"
+             license: "all-rights-reserved"
+             publish_status: "draft"
+   ```
+
+#### Using `file` 
+
+   ```yml
+   jobs:
+     post-to-medium:
+       name: Post to Medium
+       runs-on: ubuntu-latest
+       steps:
+         - name: Check out reposity
+           uses: actions/checkout@v2
+         - name: Create Medium Post
+           uses: philips-software/post-to-medium-action@v0.4.1
+           with:
+             integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
+             file: "path/to/story.md"
              content_format: "markdown"
              notify_followers: "false"
              tags: "test,tag"
