@@ -96,6 +96,7 @@ public class MediumService : IMediumService
                 // deserialize the yaml block into a custom type
                 IDeserializer deserializer = new DeserializerBuilder()
                     .WithNamingConvention(PascalCaseNamingConvention.Instance)
+                    .IgnoreUnmatchedProperties()
                     .Build();
                 Settings metadata = deserializer.Deserialize<Settings>(yaml);
                 _settings = _configureService.OverrideSettings(_settings, metadata);
