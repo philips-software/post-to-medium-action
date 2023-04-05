@@ -32,12 +32,15 @@ jobs:
           dotnet dotcover test Action/PostMediumGitHubAction.sln --dcReportType=HTML
           dotnet sonarscanner end /d:sonar.login="${{ secrets.SONAR_TOKEN }}"
 
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+
       - uses: philips-software/sbom-tool-installer-action@v1.0.0
 
       - name: Generate SBOM
         run: |
           mkdir sbom
-          sbom-tool generate -b ./sbom -bc . -ps Philips -pn post-to-medium-action -pv v0.4.2 -nsb https://github.com/philips-software/post-to-medium-action
+          sbom-tool generate -b ./sbom -bc . -ps Philips -pn post-to-medium-action -pv ${{ steps.get-latest-tag.outputs.tag }} -nsb https://github.com/philips-software/post-to-medium-action
       - uses: actions/upload-artifact@v3
         with:
           name: sbom
