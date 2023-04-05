@@ -22,7 +22,7 @@ jobs:
           tags: latest ${{ github.ref_name }}
           push-on-git-tag: "true"
           sbom: true
-          cosign: true
+          sign: true
           slsa-provenance: true
         env:
           DOCKER_USERNAME: ${{ github.actor }}
