@@ -37,7 +37,7 @@ jobs:
       - name: Generate SBOM
         run: |
           mkdir sbom
-          sbom-tool generate -b ./sbom -bc . -pn post-to-medium-action -pv v0.4.2 -nsb https://github.com/philips-software/post-to-medium-action
+          sbom-tool generate -b ./sbom -bc . -ps Philips -pn post-to-medium-action -pv v0.4.2 -nsb https://github.com/philips-software/post-to-medium-action
       - uses: actions/upload-artifact@v3
         with:
           name: sbom
