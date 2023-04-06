@@ -249,6 +249,38 @@ public class MediumServiceTests
     }
 
     [Test]
+    public async Task
+        SubmitNewContentAsync_WithUnusedAttributesInFrontmatter_ShouldIgnoreUnusedfrontmatterAndCreatePostAsPublication()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
+        {
+            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--file", "test-with-unused-frontmatter.md", "--parse-frontmatter", "true"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+
+        Mock<HttpMessageHandler> handlerMock =
+            MockMediumCall(_successfullCurrentMediumUserHttpResponse, "https://api.medium.com/v1/me");
+
+        handlerMock = MockMediumCall(handlerMock, _successfullGetPublicationsFromMediumUserHttpResponse,
+            "https://api.medium.com/v1/users/1840a7bacce6d851c032cfb7de25919c500506726fe203254bb43b629755919b5/publications");
+
+        handlerMock = MockMediumCall(handlerMock, new HttpResponseMessage
+        {
+            StatusCode = HttpStatusCode.Created,
+            Content = new StringContent(
+                "{ \"data\": {\n        \"id\": \"e855b9f3048a\",\n        \"title\": \"some-content\",\n        \"authorId\": \"1620245129e9d0ed50b8ebf3416552bed81e7100b561f1ab0f92f071739bc6033\",\n        \"url\": \"https://medium.com/@philips/some-content-e855b9f3048a\",\n        \"canonicalUrl\": \"\",\n        \"publishStatus\": \"\",\n        \"publishedAt\": 1655898280492,\n        \"license\": \"\",\n        \"licenseUrl\": \"https://policy.medium.com/medium-terms-of-service-9db0094a1e0f\",\n        \"tags\": [],\n        \"publicationId\": \"536bc4016034\"\n    }}")
+        }, "https://api.medium.com/v1/publications/28ccdb7d334d/posts");
+
+        MediumService service = new(configuredSettings, new HttpClient(handlerMock.Object));
+
+        Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
+        MediumCreatedPost post = await service.SubmitNewContentAsync();
+        Assert.AreEqual("some-content", post.Title);
+    }
+
+    [Test]
     public void SetWorkflowOutputs_WithMediumPost_ShouldSetOutputs()
     {
         IConfigureService configureService = new ConfigureService();

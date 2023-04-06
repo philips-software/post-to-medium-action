@@ -54,14 +54,17 @@ public class ConfigureService : IConfigureService
         if (settingsToReplaceWith.ContentFormat != null)
             originalSettings.ContentFormat = settingsToReplaceWith.ContentFormat;
 
-        if (settingsToReplaceWith.Tags.Any()) originalSettings.Tags = settingsToReplaceWith.Tags;
+        if (settingsToReplaceWith.Tags?.Any() == true)
+            originalSettings.Tags = settingsToReplaceWith.Tags;
 
-        if (settingsToReplaceWith.License != null) originalSettings.License = settingsToReplaceWith.License;
+        if (settingsToReplaceWith.License != null)
+            originalSettings.License = settingsToReplaceWith.License;
 
         if (settingsToReplaceWith.PublishStatus != null)
             originalSettings.PublishStatus = settingsToReplaceWith.PublishStatus;
 
-        if (settingsToReplaceWith.Title != null) originalSettings.Title = settingsToReplaceWith.Title;
+        if (settingsToReplaceWith.Title != null)
+            originalSettings.Title = settingsToReplaceWith.Title;
 
         return originalSettings;
     }
