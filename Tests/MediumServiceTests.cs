@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -255,7 +256,7 @@ public class MediumServiceTests
         IConfigureService configureService = new ConfigureService();
         string[] args =
         {
-            "-t", "validToken", "-e", "some-title", "-a", "tag", "-o", "markdown", "-n",
+            "-t", "validToken", "-o", "markdown", "-n",
             "Philips Experience Design Blog", "--file", "test-with-unused-frontmatter.md", "--parse-frontmatter", "true"
         };
         Settings configuredSettings = configureService.ConfigureApplication(args);
@@ -278,6 +279,29 @@ public class MediumServiceTests
         Assert.DoesNotThrowAsync(async () => await service.SubmitNewContentAsync());
         MediumCreatedPost post = await service.SubmitNewContentAsync();
         Assert.AreEqual("some-content", post.Title);
+    }
+
+    [Test]
+    public async Task
+        SubmitNewContentAsync_WithVariousNamingConventionsInFrontmatter_ShouldHaveProperSettingsAndCreatePostAsPublication()
+    {
+        IConfigureService configureService = new ConfigureService();
+        string[] args =
+        {
+            "-t", "validToken", "-o", "markdown", "-n",
+            "Philips Experience Design Blog", "--file", "test-with-various-naming-conventions.md",
+            "--parse-frontmatter", "true"
+        };
+        Settings configuredSettings = configureService.ConfigureApplication(args);
+        configuredSettings.Content =
+            "---\nTitle: \"Hello World\"\ndate: 2023-03-05T16:44:36+08:00\npublishdate: 2023-03-20T04:44:36+08:00\ncanonical_url: 'https://some-url.com'\nPublishStatus: 'unlisted'\ntags: ['helloworld']\ncomments: true\ndraft: true\n---\nHello world";
+        MediumService service = new(configuredSettings, new HttpClient());
+
+        Assert.DoesNotThrowAsync(async () => await service.ParseFrontmatter(configuredSettings.Content));
+        Assert.AreEqual("Hello World", configuredSettings.Title);
+        Assert.AreEqual("https://some-url.com", configuredSettings.CanonicalUrl);
+        Assert.AreEqual("unlisted", configuredSettings.PublishStatus);
+        Assert.AreEqual("helloworld", configuredSettings.Tags.First());
     }
 
     [Test]
