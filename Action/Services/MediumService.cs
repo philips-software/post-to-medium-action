@@ -72,7 +72,7 @@ public class MediumService : IMediumService
     /// </summary>
     /// <param name="content">Content in markdown</param>
     /// <returns></returns>
-    private async Task ParseFrontmatter(string content)
+    public async Task ParseFrontmatter(string content)
     {
         MarkdownPipeline pipeline = new MarkdownPipelineBuilder()
             .UseYamlFrontMatter()
@@ -91,22 +91,26 @@ public class MediumService : IMediumService
         {
             string yaml = yamlBlock.Lines.ToString();
 
-            try
+            // Define a list of naming conventions to support
+            INamingConvention[] supportedNamingConventions = new INamingConvention[]
             {
-                // deserialize the yaml block into a custom type
+                PascalCaseNamingConvention.Instance,
+                UnderscoredNamingConvention.Instance,
+                CamelCaseNamingConvention.Instance,
+                NullNamingConvention.Instance,
+                HyphenatedNamingConvention.Instance
+            };
+
+            foreach (INamingConvention namingConvention in supportedNamingConventions)
+            {
+                // Deserialize YAML with the current naming convention
                 IDeserializer deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(PascalCaseNamingConvention.Instance)
+                    .WithNamingConvention(namingConvention)
                     .IgnoreUnmatchedProperties()
                     .Build();
                 Settings metadata = deserializer.Deserialize<Settings>(yaml);
-                _settings = _configureService.OverrideSettings(_settings, metadata);
-            }
-            catch (YamlException)
-            {
-                IDeserializer deserializer = new DeserializerBuilder()
-                    .WithNamingConvention(UnderscoredNamingConvention.Instance)
-                    .Build();
-                Settings metadata = deserializer.Deserialize<Settings>(yaml);
+
+                // Override settings with the deserialized metadata
                 _settings = _configureService.OverrideSettings(_settings, metadata);
             }
 
