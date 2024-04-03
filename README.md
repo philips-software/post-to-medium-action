@@ -44,7 +44,7 @@ Add the following part in your workflow file:
        runs-on: ubuntu-latest
        steps:
          - name: Create Medium Post
-           uses: philips-software/post-to-medium-action@v0.4.1
+           uses: philips-software/post-to-medium-action@v0.6.0
            with:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
              content: |
@@ -70,10 +70,10 @@ Add the following part in your workflow file:
        name: Post to Medium
        runs-on: ubuntu-latest
        steps:
-         - name: Check out reposity
+         - name: Check out repository
            uses: actions/checkout@v2
          - name: Create Medium Post
-           uses: philips-software/post-to-medium-action@v0.4.1
+           uses: philips-software/post-to-medium-action@v0.6.0
            with:
              integration_token: "${{ secrets.INTEGRATION_TOKEN }}"
              file: "path/to/story.md"
